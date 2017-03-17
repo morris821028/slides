@@ -152,7 +152,7 @@ NTU CSIE
 
 * 位置序列 `\(S=s_1 s_2 \cdots s_r\)`
 
-* 生成字串 `\(C(X, S) = c_1 c_2 \cdots c_r\)`
+* 生成字串 `\(C(X, S) = c_1 c_2 \cdots c_r\)`, 其中 `\(c_i = x_{s_i}\)`
 
 * 目標找到 `\(|S|\)` 最大，且滿足 `\(C(X, S) = C(Y, S)\)`
 
@@ -354,20 +354,42 @@ class: center, middle
 
 ### How to Do ? ###
 
-The Art of Algorithm!
+The Art of the Algorithm
 
 ---
 
 ## Bit-level - Introdution ##
 
-LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
+因 `\(L[i, j]\)` 與其相鄰格子差值至多為 1
+
+轉換成 `\(k\)`-dominant matches boudaries，找出有多少條
+
+.center[![](./images/m8-b.PNG)]
 
 ---
 
 ## Bit-level - CIPR Algorithm ##
 
-利用加法法性質完成最原先的公式，偵測 **溢位** 更新最大長度
+分成 `\(m+1\)` 個階段 `\(L_0, L_1, L_2, \cdots, L_{m}\)`
 
+以 0 表示可以傳遞 `\(L_j\)` 至 `\(L_{j+1}\)`，`\(L_2 = \texttt{101}\)`、`\(L_3 = \texttt{110}\)` ...
+
+.center[![](./images/m9-b.PNG)]
+
+---
+
+## Bit-level - CIPR Algorithm ##
+
+如何快速運算 `\(L_j\)` 至 `\(L_{j+1}\)`，Crochemore 給出下列公式
+
+`\(L_0 = 2^n-1\)`
+
+`\(L_j = (L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])) \texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`
+
+* `\(M[y_j]\)`：字元 `\(y_j\)` 匹配字串 `\(X\)` 組成的位向量，0 為未匹配、1 為匹配
+* `\(L_{j-1} \texttt{ AND } M[y_j]\)`：為下一階段可行的 `\(k\)`-dominant 位置，以 1 表示可行解
+* `\(L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])\)`：利用加法進位的性質，將連續可行解移除掉
+* `\(\texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`：進位造成錯誤，用其修正之
 
 ---
 
