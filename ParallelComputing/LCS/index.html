@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parallel Longest Common Subsequence</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif', 'Microsoft JhengHei';
+      }
+      h1, h2, h3 {
+        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content {background: #272822; color: white; }
+      .remark-slide-content h1 { font-size: 3.5em; }
+      .remark-slide-content h2 { font-size: 2.5em; }
+      .remark-slide-content h3 { font-size: 2em; }
+      .remark-slide-content p { font-size: 1.3em; }
+      .remark-slide-content blockquote { border-left: 5px solid rgba(152,232,99,0.8); margin: 0.65em 0 0.65em 4%; padding-left: 1%; padding-right: 1%; }
+      .remark-slide-content img { max-width: 90%; max-height: 400px; }
+      .remark-slide-content table { border: 1px solid #696969; width: 100%; margin: 1px;}
+      .remark-slide-content table thead { font-family: "Times New Roman"; }
+      .remark-slide-content table th, .remark-slide-content table td, .remark-slide-content table tr  { padding: 1px 2px; border: 1px solid #696969; }
+      .remark-slide-content table tbody { font-family: "Ubuntu Mono"; }
+      .remark-slide-content .big { font-size: 2em; }
+      .remark-slide-content strong {color: red;}
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.5em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+/*        background: #e7e8e2;*/
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+		font-size: 2em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 2em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 48%;
+        height: 92%;
+		float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 48%;
+		float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+title: Radiosity
+class: center, middle
+
+### Parallel
+
+### Longest Common Subsequence
+
+### 平行最長共同子字串
+
+R04922067 楊翔雲, Morris
+
+NTU CSIE
+
+---
+
+## Longest Common Subsequence ##
+
+* 在兩個序列中找到最長共同子序列
+
+* 給定兩個字串 `\(X=x_1 x_2 \cdots x_n\)`, `\(Y=y_1 y_2 \cdots y_m\)`
+
+* 位置序列 `\(S=s_1 s_2 \cdots s_r\)`
+
+* 生成字串 `\(C(X, S) = c_1 c_2 \cdots c_r\)`
+
+* 目標找到 `\(|S|\)` 最大，且滿足 `\(C(X, S) = C(Y, S)\)`
+
+---
+
+## Recursive Formula ##
+
+`\(L[i, j] = \left\{\begin{matrix}L[i-1, j-1]+1 && \textit{, if } x_i = y_j\\ \max\{L[i-1, j], L[i, j-1]\} && \textit{, if } x_i \neq y_j\\ 0 && \textit{, otherwise}\end{matrix}\right.\)`
+
+### Naive Implementation ###
+
+* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(n, m)\)`
+
+* 回溯法 (backtracking) 找解
+
+---
+
+## Recursive Formula ##
+
+`\(L[i, j] = \left\{\begin{matrix}L[i-1, j-1]+1 && \textit{, if } x_i = y_j\\ \max\{L[i-1, j], L[i, j-1]\} && \textit{, if } x_i \neq y_j\\ 0 && \textit{, otherwise}\end{matrix}\right.\)`
+
+### Advanced Implementation ###
+
+* Multiple buffering、滾動數組
+
+* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(\max(n, m))\)`
+
+* 如何找到一組解？Hirschberg's Algorithm
+
+---
+
+## Advanced Algorithm ##
+
+`\(O(nm)\)` 不是最好的！我們可以做到 `\(O(\frac{nm}{\log n})\)`。
+
+## How to Do ##
+
+* Method of Four Russians 四個俄羅斯人算法
+
+* 這只是一種技術 － 藉由預建表達到加速
+
+* 建表空間 `\(O(n^{1.5})\)`
+
+> 儘管能壓縮表格，查表效能好嗎？Mind the Cache！
+
+---
+
+## Data Dependency ##
+
+根據遞迴公式，所有情況依賴左、上、左上三格
+
+`\(L[i, j] = \left\{\begin{matrix}L[i-1, j-1]+1 && \textit{, if } x_i = y_j\\ \max\{L[i-1, j], L[i, j-1]\} && \textit{, if } x_i \neq y_j\\ 0 && \textit{, otherwise}\end{matrix}\right.\)`
+
+.left-column[![](./images/m1-b.PNG)]
+.right-column[![](./images/m2-b.PNG)]
+
+---
+
+## How to Parallel LCS ? ##
+
+Wavefront Method 波前法：  
+平行處理波上的資料，如下圖 `\(t_i\)` 表示第 `\(i\)` 次運行。  
+當矩陣為 `\(n \times m\)` 時，運行 `\(n+m-1\)` 次。
+
+.center[![](./images/m3-b.PNG)]
+
+---
+
+## Efficiency ##
+
+> 同一個演算法，效能天差地遠
+
+.big[.center[提高資料局部性]]
+
+.big[.center[Enhanced Data Locality]]
+
+.big[.center[減少通信成本]]
+
+.big[.center[Reduce Communication Costs]]
+
+---
+
+## Efficiency - Problem ##
+
+假設每一 `\(1 \times 2\)` 的區塊為一個 page size
+
+造成不同的處理器會使用同一個 page `\( \Rightarrow \)` false sharing
+
+.center[![](./images/m5-b.PNG)]
+
+---
+
+## Efficiency - Data Layout ##
+
+換個排列就會好了些 ... 但仍需要 `\(n+m-1\)` 次
+
+.center[![](./images/m4-b.PNG)]
+
+---
+
+## Take a Break ##
+
+假設我們有 `\(p\)` 個處理器
+
+`\(p\)` 倍加速
+
+---
+
+## Do it Better ##
+
+有沒有可能少於 `\(n+m-1\)` 次完成？可以，我們改公式吧！
+
+`\(C= \Sigma = \texttt{ACGT}\)`：字元集
+
+`\(P[i, j]\)`：每一個字元 `\(c_i\)`，在位置 `\(j\)` 之前（包含）出現 `\(c_i\)` 的位置。
+
+`\(P[i, j] = \left\{\begin{matrix}0 && \textit{, if } j = 0\\ j && \textit{, if } y_{j} = c_i\\ P[i, j-1] && \textit{, o.w.}\end{matrix}\right.\)`
+
+這一步可以平行嗎？可以，`\(|C| m / p + m\)`，還可以更好 `\(|C| m / p + \log m\)`，其中 `\(p\)` 是處理器個數。
+
+---
+
+### Recursive Formula ###
+
+`\(c = x_i\)`
+
+`\(L[i, j] = \left\{\begin{matrix}0 & \textit{, if } i = 0 \textit{ or } j = 0\\ L[i-1, j] & \textit{, if } P[c, j] = 0\\ \end{matrix}\right.\)`
+
+`\(L[i, j] = \max\{L[i-1,j], L[i-1, P[c,j]-1]+1\} \)`
+
+與先前一樣，同時拔除尾端找子問題的最佳解
+
+保證匹配 `\(x_i\)` 和 `\(y_{P[c, j]}\)`，而非 `\(x_i\)` 和 `\(y_j\)` 是否匹配的兩種可能
+
+這一步需要 `\(n m / p + n\)`，搭配預建表的 `\(\log m\)` 次，只需要 `\(n + \log m\)` 次。
+
+---
+
+## Take a Break ##
+
+* 降低 critial path 長度，屬於 **常數優化**
+
+* `\(2p\)` 倍加速
+
+---
+
+## Level Parallelism ##
+
+* Bit-level parallelism  
+位元同時計算，如位元壓縮之類的算法設計
+
+* Instruction-level parallelism  
+編譯器、硬體，可藉由 instruction scheduling 增加平行度
+
+* Memory-level parallelism  
+**現在位置**
+
+* Task parallelism  
+將問題一分為多，分別處理好再合併
+
+---
+
+## Back to Bit-level ##
+
+* 之前所講的都是在一次運算只對一個數據操作
+  * 如 `\(L[i, j]\)`
+
+* 若一次運算對 `\(w\)` 個數據操作，其 `\(w\)` 為硬體的平行度
+  * 如 `\(L[i, j], \; L[i, j+1], \; \cdots, \; L[i, j+w-1]\)`
+  * 當代 64-bit 架構，單一處理器能快上 `\(60\)` 倍
+
+### How to Do ? ###
+
+The Art of Algorithm!
+
+---
+
+## Bit-level - Introdution ##
+
+LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
+
+---
+
+## Bit-level - CIPR Algorithm ##
+
+利用加法法性質完成最原先的公式，偵測 **溢位** 更新最大長度
+
+
+---
+
+## Bit-level + Memory-level ##
+
+平行加法器於多處理器平台上
+
+你也許需要複習以下幾種加法器
+
+* Ripple-carry Adder
+
+* Carry-lookahead Adder
+
+* Carry-select Adder
+
+* More ...
+
+
+---
+
+## Take a Break ##
+
+* 支援 64-bit 操作的計算機，增添 64 倍的效能改善
+
+* `\(128 p\)` 倍加速
+
+> 已經很完美了嗎？No
+
+---
+
+## Back to Task ##
+
+當平行遇到了瓶頸
+
+一次能平行處理的不夠多，如何拓展更高的平行度？
+
+* 將 `\(X\)` 拆成前半 `\(X_\text{front}\)`和後半 `\(X_\text{back}\)`
+
+* `\(LCS(X, Y) = \text{merge}(LCS(X_\text{front}, Y), LCS(X_text{back}, Y))\)`
+
+* __先決條件__： 是否可在合併 Task 階段使用高效率的平行
+
+---
+
+## Task-level - Introduction ## 
+
+---
+
+## Task-level - Merge Task ## 
+
+---
+
+## Take a Break ##
+
+* 現在，我們能拆成至少 2 個階段
+
+* `\(256 p\)` 倍加速
+
+* 這已經是最快了嗎？抱歉，我並不知道
+
+---
+
+## Submit Your Best Algorithm ##
+
+如果是你的話，能給我更多啟發對吧？
+
++ [批改娘 10110. Longest Common Subsequence](https://judgegirl.csie.org/problem/0/10110)
+
++ [批改娘 10111. Longest Common Subsequence II](https://judgegirl.csie.org/problem/0/10111)
+
++ [批改娘 20011. Bit Vector Adder](https://judgegirl.csie.org/problem/0/20011)
+
+---
+
+class: center, middle
+
+### 讓我們在這學期 ###
+
+### 追求各種算法的平行極限吧！ ###
+
+以上純屬 Morris 私心
+
+    </textarea>
+	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+
+      // Setup MathJax
+      MathJax.Hub.Config({
+          tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+          }
+      });
+/*
+      MathJax.Hub.Queue(function() {
+          MathJax.Hub.getAllJax().map(function(index, elem) {
+              return(elem.SourceElement());
+          }).parent().addClass('has-jax');
+      });
+*/
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>
