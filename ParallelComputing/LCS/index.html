@@ -28,6 +28,7 @@
       .remark-slide-content table th, .remark-slide-content table td, .remark-slide-content table tr  { padding: 1px 2px; border: 1px solid #696969; }
       .remark-slide-content table tbody { font-family: "Ubuntu Mono"; }
       .remark-slide-content .big { font-size: 2em; }
+      .remark-slide-content .small-image { max-width: 50%; }
       .remark-slide-content strong {color: red;}
       .footnote {
         position: absolute;
@@ -112,7 +113,6 @@
 
       /* Two-column layout */
       .left-column {
-        color: #777;
         width: 48%;
         height: 92%;
 		float: left;
@@ -303,7 +303,8 @@ class: center, middle
 
 保證匹配 `\(x_i\)` 和 `\(y_{P[c, j]}\)`，而非 `\(x_i\)` 和 `\(y_j\)` 是否匹配
 
-* `\(L[i, j]\)` 需 `\(O(n m / p + n)\)`、`\(P[i, j]\)` 需 `\(O(|C| m / p + \log m)\)`
+* `\(L[i, j]\)` 需 `\(O(n m / p + n)\)`  
+`\(P[i, j]\)` 需 `\(O(|C| m / p + \log m)\)`
 
 * 最後得到 `\(O(n + \log m)\)`
 
@@ -380,24 +381,48 @@ The Art of the Algorithm
 
 ## Bit-level - CIPR Algorithm ##
 
-如何快速運算 `\(L_j\)` 至 `\(L_{j+1}\)`，Crochemore 給出下列公式
+運算 `\(L_j\)` 至 `\(L_{j+1}\)`，Crochemore 給出下列公式
 
 `\(L_0 = 2^n-1\)`
 
 `\(L_j = (L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])) \texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`
 
-* `\(M[y_j]\)`：字元 `\(y_j\)` 匹配字串 `\(X\)` 組成的位向量，0 為未匹配、1 為匹配
-* `\(L_{j-1} \texttt{ AND } M[y_j]\)`：為下一階段可行的 `\(k\)`-dominant 位置，以 1 表示可行解
-* `\(L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])\)`：利用加法進位的性質，將連續可行解移除掉
-* `\(\texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`：進位造成錯誤，用其修正之
+* `\(M[y_j]\)`  
+字元 `\(y_j\)` 匹配字串 `\(X\)` 組成的位向量，0 為未匹配、1 為匹配
+* `\(L_{j-1} \texttt{ AND } M[y_j]\)`  
+為下一階段可行的 `\(k\)`-dominant 位置，以 1 表示可行解
+* `\(L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])\)`  
+利用加法進位的性質，將連續可行解移除掉
+* `\(\texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`  
+進位造成錯誤，用其修正之
+
+---
+
+## Practice ##
+
+`\(M[\texttt{A}]=\texttt{001}\)`、`\(M[\texttt{C}]=\texttt{010}\)`、`\(M[\texttt{G}]=\texttt{100}\)`、`\(M[\texttt{T}]=\texttt{000}\)`
+
+.left-column[
+* `\(L_1 = \texttt{111}\)`
+* `\(L_{1} \texttt{ AND } M[\texttt{C}] = \texttt{010}\)`   
+支配點的可行解  
+出現 1 的位置可成為新的支配點
+* `\(L_{1} \texttt{ AND } M'[\texttt{C}] = \texttt{101}\)`   
+修正遮罩  
+出現 1 的位置不可成為支配點
+* `\(\texttt{111} + \texttt{010} = \underline{\texttt{1}}\texttt{001}\)`   
+進位來移動支配線  
+因 **溢位** 多紀錄一條
+* `\(L_2 = \texttt{001} \texttt{ OR } \texttt{101} = \texttt{101}\)`
+]
+
+.right-column[.center[![](./images/m9-b.PNG)]]
 
 ---
 
 ## Bit-level + Memory-level ##
 
-平行加法器於多處理器平台上
-
-你也許需要複習以下幾種加法器
+平行加法器於多處理器平台上，需要複習以下幾種加法器
 
 * Ripple-carry Adder
 
@@ -406,6 +431,10 @@ The Art of the Algorithm
 * Carry-select Adder
 
 * More ...
+
+> 利用 `\(C_{i+1} = G_i + P_i \; C_i\)`  
+> 切數個區塊加法，運行兩階段操作  
+> 可做到 `\(O(n/p + p)\)`
 
 
 ---
