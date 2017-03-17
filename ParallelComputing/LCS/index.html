@@ -12,7 +12,7 @@
         font-family: 'Droid Serif', 'Microsoft JhengHei';
       }
       h1, h2, h3 {
-        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz';
+        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz', 'Microsoft JhengHei';
         font-weight: 400;
         margin-bottom: 0;
       }
@@ -253,11 +253,13 @@ Wavefront Method 波前法：
 
 ---
 
+class: center, middle
+
 ## Take a Break ##
 
 假設我們有 `\(p\)` 個處理器
 
-`\(p\)` 倍加速
+`\(p \times\)` faster
 
 ---
 
@@ -267,17 +269,31 @@ Wavefront Method 波前法：
 
 `\(C= \Sigma = \texttt{ACGT}\)`：字元集
 
-`\(P[i, j]\)`：每一個字元 `\(c_i\)`，在位置 `\(j\)` 之前（包含）出現 `\(c_i\)` 的位置。
+`\(P[i, j]\)`：對字元 `\(c_i\)`，位置 `\(j\)` 之前（包含）出現 `\(c_i\)` 的位置。
 
 `\(P[i, j] = \left\{\begin{matrix}0 && \textit{, if } j = 0\\ j && \textit{, if } y_{j} = c_i\\ P[i, j-1] && \textit{, o.w.}\end{matrix}\right.\)`
 
-這一步可以平行嗎？可以，`\(|C| m / p + m\)`，還可以更好 `\(|C| m / p + \log m\)`，其中 `\(p\)` 是處理器個數。
+這一步可以平行嗎？可以
+
+* `\(O(|C| m / p + m)\)`：每個字元獨立
+
+* `\(O(|C| m / p + \log m)\)`：倍增找解
+
+---
+
+class: center, middle
+
+## Practice - `\(P[i, j]\)` ##
+
+`\(X = \texttt{ACG}\)`, `\(Y = \texttt{TCAGC}\)`
+
+.center[![](./images/m6-b.PNG)]
 
 ---
 
 ### Recursive Formula ###
 
-`\(c = x_i\)`
+每次迭代 `\(c = x_i\)`
 
 `\(L[i, j] = \left\{\begin{matrix}0 & \textit{, if } i = 0 \textit{ or } j = 0\\ L[i-1, j] & \textit{, if } P[c, j] = 0\\ \end{matrix}\right.\)`
 
@@ -285,17 +301,29 @@ Wavefront Method 波前法：
 
 與先前一樣，同時拔除尾端找子問題的最佳解
 
-保證匹配 `\(x_i\)` 和 `\(y_{P[c, j]}\)`，而非 `\(x_i\)` 和 `\(y_j\)` 是否匹配的兩種可能
+保證匹配 `\(x_i\)` 和 `\(y_{P[c, j]}\)`，而非 `\(x_i\)` 和 `\(y_j\)` 是否匹配
 
-這一步需要 `\(n m / p + n\)`，搭配預建表的 `\(\log m\)` 次，只需要 `\(n + \log m\)` 次。
+* `\(L[i, j]\)` 需 `\(O(n m / p + n)\)`、`\(P[i, j]\)` 需 `\(O(|C| m / p + \log m)\)`
+
+* 最後得到 `\(O(n + \log m)\)`
 
 ---
 
+## Practice - `\(L[i, j]\)` ##
+
+`\(X = \texttt{ACG}\)`, `\(Y = \texttt{TCAGC}\)`
+
+.center[![](./images/m7-b.PNG)]
+
+---
+
+class: center, middle
+
 ## Take a Break ##
 
-* 降低 critial path 長度，屬於 **常數優化**
+降低 critial path 長度，屬於 **常數優化**
 
-* `\(2p\)` 倍加速
+`\(2p \times\)` faster
 
 ---
 
@@ -322,7 +350,7 @@ Wavefront Method 波前法：
 
 * 若一次運算對 `\(w\)` 個數據操作，其 `\(w\)` 為硬體的平行度
   * 如 `\(L[i, j], \; L[i, j+1], \; \cdots, \; L[i, j+w-1]\)`
-  * 當代 64-bit 架構，單一處理器能快上 `\(60\)` 倍
+  * 當代 64-bit 架構，單一處理器能快上 `\(60 \uparrow\)` 倍
 
 ### How to Do ? ###
 
@@ -360,11 +388,13 @@ LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
 
 ---
 
+class: center, middle
+
 ## Take a Break ##
 
-* 支援 64-bit 操作的計算機，增添 64 倍的效能改善
+支援 64-bit 操作的計算機，增添 64 倍的效能改善
 
-* `\(128 p\)` 倍加速
+`\(128 p \times\)` faster
 
 > 已經很完美了嗎？No
 
@@ -378,7 +408,7 @@ LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
 
 * 將 `\(X\)` 拆成前半 `\(X_\text{front}\)`和後半 `\(X_\text{back}\)`
 
-* `\(LCS(X, Y) = \text{merge}(LCS(X_\text{front}, Y), LCS(X_text{back}, Y))\)`
+* `\(LCS(X, Y) = \text{merge}(LCS(X_\text{front}, Y), LCS(X_\text{back}, Y))\)`
 
 * __先決條件__： 是否可在合併 Task 階段使用高效率的平行
 
@@ -392,13 +422,15 @@ LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
 
 ---
 
+class: center, middle
+
 ## Take a Break ##
 
-* 現在，我們能拆成至少 2 個階段
+現在，我們能拆成至少 2 個階段
 
-* `\(256 p\)` 倍加速
+`\(256 p \times\)` faster
 
-* 這已經是最快了嗎？抱歉，我並不知道
+> 這已經是最快了嗎？抱歉，我並不知道
 
 ---
 
@@ -410,7 +442,7 @@ LCS 特性：`\(L[i, j]\)` 與其相鄰格子差值至多為 1
 
 + [批改娘 10111. Longest Common Subsequence II](https://judgegirl.csie.org/problem/0/10111)
 
-+ [批改娘 20011. Bit Vector Adder](https://judgegirl.csie.org/problem/0/20011)
++ [批改娘 20012. Bit Vector Adder](https://judgegirl.csie.org/problem/0/20012)
 
 ---
 
