@@ -405,7 +405,7 @@ The Art of the Algorithm
 
 `\(L_0 = 2^n-1\)`
 
-`\(L_j = (L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])) \texttt{ OR } (L_{j-1} \texttt{AND} M'[y_j])\)`
+`\(L_j = (L_{j-1} + (L_{j-1} \texttt{ AND } M[y_j])) \texttt{ OR } (L_{j-1} \texttt{ AND } M'[y_j])\)`
 
 * `\(M[y_j]\)`  
 字元 `\(y_j\)` 匹配字串 `\(X\)` 組成的位向量，0 為未匹配、1 為匹配
@@ -452,10 +452,15 @@ The Art of the Algorithm
 
 * More ...
 
-> 利用 `\(C_{i+1} = G_i + P_i \; C_i\)`  
-> 切數個區塊加法，運行兩階段操作  
-> 可做到 `\(O(n/p + p)\)`
+---
 
+## Carry Adder ##
+
+利用 `\(C_{i+1} = G_i + P_i \; C_i\)`、切數個區塊加法，`\(O(n/p + p)\)`
+
+`\(\texttt{1110 1011} + \texttt{0001 0111} = \underline{\texttt{1 }}\texttt{0000 0010}\)`
+
+.center[![](./images/m14-b.PNG)]
 
 ---
 
@@ -523,7 +528,25 @@ class: center, middle
 
 現在約為 2 s
 
-> 這已經是最快了嗎？抱歉，我並不知道
+> 這已經是最快了嗎？還沒呢
+
+---
+
+## Instruction-level parallelism ##
+
+先不談指令平行
+
+由於 shared memory 的關係，編譯器大多不做優化
+
+你可以做到
+
+* Copy optimization
+
+* Improve hardware prediction
+
+* Memory coalesce
+
+* More ... 你可以修 **高等編譯器** 
 
 ---
 
