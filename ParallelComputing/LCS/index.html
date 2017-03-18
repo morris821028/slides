@@ -30,6 +30,8 @@
       .remark-slide-content .big { font-size: 2em; }
       .remark-slide-content .small-image { max-width: 50%; }
       .remark-slide-content strong {color: red;}
+      .white-background {background: white;}
+      .white-background {color: black;}
       .footnote {
         position: absolute;
         bottom: 3em;
@@ -178,7 +180,7 @@ NTU CSIE
 
 * Multiple buffering、滾動數組
 
-* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(\max(n, m))\)`
+* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(\min(n, m))\)`
 
 * 如何找到一組解？Hirschberg's Algorithm
 
@@ -257,9 +259,13 @@ class: center, middle
 
 ## Take a Break ##
 
-假設我們有 `\(p\)` 個處理器
+假設我們有 `\(10\)` 個處理器
 
-`\(p \times\)` faster
+`\(10 \times\)` faster
+
+運行長度 `\(n = m = 10^6\)`，單一處理器約為 4096 s
+
+現在約為 512 s
 
 ---
 
@@ -277,7 +283,19 @@ class: center, middle
 
 * `\(O(|C| m / p + m)\)`：每個字元獨立
 
-* `\(O(|C| m / p + \log m)\)`：倍增找解
+* `\(O(|C| m / p + \log m)\)`： **倍增找解**
+
+---
+
+## Doubling Algorithm ##
+
+`\(P[i, j, 0] = \left\{\begin{matrix}-1 && \textit{, if } y_{j} \neq c_i\\ j && \textit{, if } y_{j} = c_i\\ \end{matrix}\right.\)`
+
+`\(P[i, j, k] = \max\{P[j, k-1], P[j-2^k, k-1]\}\)`
+
+* Serial algorithm `\(O(|C| m \log m)\)`
+
+* Parallel algorithm `\(O(|C| m \log m / p + \log m)\)`
 
 ---
 
@@ -324,7 +342,9 @@ class: center, middle
 
 降低 critial path 長度，屬於 **常數優化**
 
-`\(2p \times\)` faster
+`\(2 \times\)` faster
+
+現在約為 256 s
 
 ---
 
@@ -346,11 +366,11 @@ class: center, middle
 
 ## Back to Bit-level ##
 
-* 之前所講的都是在一次運算只對一個數據操作
-  * 如 `\(L[i, j]\)`
+* 之前所講的都是在一次運算只對一個數據 `\(L[i, j]\)` 操作
 
 * 若一次運算對 `\(w\)` 個數據操作，其 `\(w\)` 為硬體的平行度
-  * 如 `\(L[i, j], \; L[i, j+1], \; \cdots, \; L[i, j+w-1]\)`
+  * 如 `\(L[i, j], \; L[i, j+1], \; \cdots, \; L[i, j+w-1]\)`  
+
   * 當代 64-bit 架構，單一處理器能快上 `\(60 \uparrow\)` 倍
 
 ### How to Do ? ###
@@ -445,7 +465,9 @@ class: center, middle
 
 支援 64-bit 操作的計算機，增添 64 倍的效能改善
 
-`\(128 p \times\)` faster
+`\(128 \times\)` faster
+
+現在約為 4 s
 
 > 已經很完美了嗎？No
 
@@ -455,21 +477,39 @@ class: center, middle
 
 當平行遇到了瓶頸
 
-一次能平行處理的不夠多，如何拓展更高的平行度？
+一次能平行處理的資料數不夠多，如何拓展更高的平行度？
 
-* 將 `\(X\)` 拆成前半 `\(X_\text{front}\)`和後半 `\(X_\text{back}\)`
-
-* `\(LCS(X, Y) = \text{merge}(LCS(X_\text{front}, Y), LCS(X_\text{back}, Y))\)`
-
-* __先決條件__： 是否可在合併 Task 階段使用高效率的平行
+__先決條件__： 是否可在合併 Task 階段使用高效率的平行
 
 ---
 
 ## Task-level - Introduction ## 
 
+將 `\(X\)` 拆成前半 `\(X_\text{front}\)`和後半 `\(X_\text{back}\)`
+
+
+`\(\begin{align}\text{LCS}(X, Y) = \text{merge}(&\text{LCS}(X_\text{front}, Y), \\
+   &\text{LCS}(\text{reverse}(X_\text{back}), \text{reverse}(Y)))\end{align}\)`
+
 ---
 
+class: white-background
+
 ## Task-level - Merge Task ## 
+
+.left-column[![](./images/m10.PNG)]
+
+.right-column[![](./images/m11.PNG)]
+
+---
+
+class: white-background
+
+## Task-level - Why ## 
+
+.left-column[![](./images/m12.PNG)]
+
+.right-column[![](./images/m13.PNG)]
 
 ---
 
@@ -479,7 +519,9 @@ class: center, middle
 
 現在，我們能拆成至少 2 個階段
 
-`\(256 p \times\)` faster
+`\(2 \times\)` faster
+
+現在約為 2 s
 
 > 這已經是最快了嗎？抱歉，我並不知道
 
@@ -487,7 +529,7 @@ class: center, middle
 
 ## Submit Your Best Algorithm ##
 
-如果是你的話，能給我更多啟發對吧？
+如果是妳的話，能給我更多啟發對吧？
 
 + [批改娘 10110. Longest Common Subsequence](https://judgegirl.csie.org/problem/0/10110)
 
@@ -504,6 +546,16 @@ class: center, middle
 ### 追求各種算法的平行極限吧！ ###
 
 以上純屬 Morris 私心
+
+---
+
+## Reference ##
+
+* Jiaoyun Yang, Yun Xu, Yi Shang, "An Efficient Parallel Algorithm for Longest Common Subsequence Problem on GPUs", 2010
+
+* Maxime Crochemore, Costas S. Iliopoulos, Yoan J. Pinzón, James F. Reid, "A fast and practical bit-vector algorithm for the Longest Common Subsequence problem", 2001
+
+* Maxime Crochemore, Costas S. Iliopoulos, Yoan J. Pinzón, "Speeding-up Hirschberg and Hunt-Szymanski LCS Algorithms", 2001
 
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
