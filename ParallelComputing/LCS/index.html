@@ -251,7 +251,13 @@ Wavefront Method 波前法：
 
 換個排列就會好了些 ... 但仍需要 `\(n+m-1\)` 次
 
-.center[![](./images/m4-b.PNG)]
+.center[![](./images/m4-1-b.PNG)]
+
+---
+
+## Efficiency - Data Layout ##
+
+<span class="center"><img src="./images/m4-2-b.PNG" alt="" style="max-height:500px;"></span>
 
 ---
 
@@ -289,13 +295,23 @@ class: center, middle
 
 ## Doubling Algorithm ##
 
+倍增算法，找到最靠近該位置的最近匹配位置
+
 `\(P[i, j, 0] = \left\{\begin{matrix}0 && \textit{, if } y_{j} \neq c_i\\ j && \textit{, if } y_{j} = c_i\\ \end{matrix}\right.\)`
 
-`\(P[i, j, k] = \max\{P[i, j, k-1], P[i, j-2^k, k-1]\}\)`
+`\(P[i, j, k] = \max\{P[i, j, k-1], P[i, j-2^{k-1}, k-1]\}\)`
 
 * Serial algorithm `\(O(|C| m \log m)\)`
 
 * Parallel algorithm `\(O(|C| m \log m / p + \log m)\)`
+
+空間只需要 `\(O(m)\)`，我們只需要最後那一排。
+
+---
+
+## Doubling Algorithm - Practice ##
+
+.center[![](./images/m15-b.PNG)]
 
 ---
 
@@ -325,6 +341,24 @@ class: center, middle
 `\(P[i, j]\)` 需 `\(O(|C| m / p + \log m)\)`
 
 * 最後得到 `\(O(n + \log m)\)`
+
+---
+
+## Recursive Formula - Compare ##
+
+> 保證匹配 `\(x_i\)` 和 `\(y_{P[c, j]}\)`，而非 `\(x_i\)` 和 `\(y_j\)` 是否匹配？
+
+`\(\text{LCS}(\texttt{TCAG}, \texttt{AC})\)`
+
+* 一般做法，在下述兩種情況找最佳解
+  * `\(\text{LCS}(\texttt{TCAG}, \texttt{A})\)`
+
+  * `\(\text{LCS}(\texttt{TCA}, \texttt{AC})\)`
+
+* 現在可以這麼找
+  * `\(\text{LCS}(\texttt{TCAG}, \texttt{A})\)`
+
+  * `\(\text{LCS}(\texttt{T}, \texttt{A}) + \texttt{C}\)`
 
 ---
 
