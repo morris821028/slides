@@ -152,11 +152,11 @@ NTU CSIE
 
 * 給定兩個字串 `\(X=x_1 x_2 \cdots x_n\)`, `\(Y=y_1 y_2 \cdots y_m\)`
 
-* 位置序列 `\(S=s_1 s_2 \cdots s_r\)`
+* 位置序列 `\(S=s_1 s_2 \cdots s_r, \; \forall i < r: s_i < s_{i+1}\)`
 
 * 生成字串 `\(C(X, S) = c_1 c_2 \cdots c_r\)`, 其中 `\(c_i = x_{s_i}\)`
 
-* 目標找到 `\(|S|\)` 最大，且滿足 `\(C(X, S) = C(Y, S)\)`
+* 目標找到 `\(|S|\)` 最大，且滿足 `\(C(X, S_x) = C(Y, S_y)\)`
 
 ---
 
@@ -166,7 +166,7 @@ NTU CSIE
 
 ### Naive Implementation ###
 
-* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(n, m)\)`
+* 時間複雜度 `\(O(nm)\)`，空間複雜度 `\(O(nm)\)`
 
 * 回溯法 (backtracking) 找解
 
@@ -289,9 +289,9 @@ class: center, middle
 
 ## Doubling Algorithm ##
 
-`\(P[i, j, 0] = \left\{\begin{matrix}-1 && \textit{, if } y_{j} \neq c_i\\ j && \textit{, if } y_{j} = c_i\\ \end{matrix}\right.\)`
+`\(P[i, j, 0] = \left\{\begin{matrix}0 && \textit{, if } y_{j} \neq c_i\\ j && \textit{, if } y_{j} = c_i\\ \end{matrix}\right.\)`
 
-`\(P[i, j, k] = \max\{P[j, k-1], P[j-2^k, k-1]\}\)`
+`\(P[i, j, k] = \max\{P[i, j, k-1], P[i, j-2^k, k-1]\}\)`
 
 * Serial algorithm `\(O(|C| m \log m)\)`
 
