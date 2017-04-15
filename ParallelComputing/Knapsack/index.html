@@ -131,7 +131,7 @@
   <body>
     <textarea id="source">
 
-title: Radiosity
+title: Knapsack Problem
 class: center, middle
 
 ### Parallel
@@ -335,7 +335,7 @@ for (int i = 1; i <= N; i++) {
     int wi = w[i], vi = v[i];
     #pragma omp for
     for (int j = 0; j <= W; j++) {
-        if (w[i] > j)
+        if (wi > j)
             next[j] = curr[j];
         else
             next[j] = max(curr[j], curr[j-wi]+vi);
