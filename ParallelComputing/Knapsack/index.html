@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parallel 0/1 Knapsack Problem</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif', 'Microsoft JhengHei';
+      }
+      h1, h2, h3 {
+        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz', 'Microsoft JhengHei';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content {background: #272822; color: white; }
+      .remark-slide-content h1 { font-size: 3.5em; }
+      .remark-slide-content h2 { font-size: 2.5em; }
+      .remark-slide-content h3 { font-size: 2em; }
+      .remark-slide-content p { font-size: 1.3em; }
+      .remark-slide-content blockquote { border-left: 5px solid rgba(152,232,99,0.8); margin: 0.65em 0 0.65em 4%; padding-left: 1%; padding-right: 1%; }
+      .remark-slide-content img { max-width: 90%; max-height: 400px; }
+      .remark-slide-content table { border: 1px solid #696969; width: 100%; margin: 1px;}
+      .remark-slide-content table thead { font-family: "Times New Roman"; }
+      .remark-slide-content table th, .remark-slide-content table td, .remark-slide-content table tr  { padding: 1px 2px; border: 1px solid #696969; }
+      .remark-slide-content table tbody { font-family: "Ubuntu Mono"; }
+      .remark-slide-content .big { font-size: 2em; }
+      .remark-slide-content .small-image { max-width: 50%; }
+      .remark-slide-content strong {color: red;}
+      .white-background {background: white;}
+      .white-background {color: black;}
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.5em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+/*        background: #e7e8e2;*/
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+		font-size: 2em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 2em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        width: 48%;
+        height: 92%;
+		float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 48%;
+		float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+title: Radiosity
+class: center, middle
+
+### Parallel
+
+### 0/1 Knapsack Problem
+
+### 平行 0/1 背包問題
+
+R04922067 楊翔雲, Morris
+
+NTU CSIE
+
+---
+
+## 0/1 背包問題 ##
+
+* 給 `\(N\)` 個物品重量和價值 `\((w_1, v_1), (w_2, v_2), \cdots, (w_N, v_N)\)`
+
+* 背包大小最多放入 `\(W\)` 總重
+
+* 請問放入最大價值為何？
+
+---
+
+## 動態規劃 - 直觀 ##
+
+* 時間複雜度 `\(O(NW)\)` －偽多項式時間
+
+* `\(m[i, w]\)`：放入前 `\(i\)` 個物品，重量小於等於 `\(w\)` 的最大價值
+
+* `\(m[0, w] = 0\)`
+
+* `\(m[i, w] = m[i-1, w]\)`, if `\(w_i > w\)`
+
+* `\(m[i, w] = \max(m[i-1, w], m[i-1, w-w_i]+v_i)\)`
+
+---
+
+## 動態規劃 - 直觀 ##
+
+```c
+int m[MAXN][MAXW];
+memset(m, 0, sizeof(m));
+
+for (int i = 1; i <= N; i++) {
+    for (int j = 0; j <= W; j++) {
+        if (w[i] > j)
+            m[i][j] = m[i-1][j];
+        else
+            m[i][j] = max(m[i-1][j], m[i-1][j-w[i]]+v[i]);
+    }
+}
+
+return m[N][W];
+
+```
+
+* 時間複雜度 `\(O(NW)\)`
+
+* 空間複雜度 `\(O(NW)\)`
+
+> 空間使用效率太差  
+> 假設只求最佳解的值，優化空間 `\(O(W)\)`－滾動數組
+
+---
+
+## 動態規劃 - 空間優化 1 ##
+
+```c
+int m[2][MAXW];
+memset(m, 0, sizeof(m));
+
+for (int i = 1; i <= N; i++) {
+    int curr = (i&1), next = (i&1)^1;
+    for (int j = 0; j <= W; j++) {
+        if (w[i] > j)
+            m[next][j] = m[curr][j];
+        else
+            m[next][j] = max(m[curr][j], m[curr][j-w[i]]+v[i]);
+    }
+}
+return m[(N&1)^1][W];
+```
+
+空間大小恰好為兩倍的 `\(W\)`
+
+---
+
+## 動態規劃 - 空間優化 2 ##
+
+若保證 `\(w_i \ge 0\)`，則可以確定更新方向是單調的
+
+反向更新使得無須使用滾動數組
+
+```c
+int m[MAXW];
+memset(m, 0, sizeof(m));
+
+for (int i = 1; i <= N; i++) {
+    for (int j = W; j >= w[i]; j--) {
+        m[j] = max(m[j], m[j-w[i]]+v[i]);
+    }
+}
+return m[W];
+```
+
+空間大小恰好為 `\(W\)`
+
+---
+
+## 動態規劃 - 減少計算次數 ##
+
+從上述的實作，運行次數為 `\(NW\)` 次或 `\(\sum_{i=1}^{N} W-w_i\)`
+
+縮減邊界使用，我們可以這麼修改
+
+```c
+for (int i = 1, sum = 0; i <= N; i++) {
+    sum = min(W, sum+w[i]);
+    for (int j = sum; j >= w[i]; j--) {
+        m[j] = max(m[j], m[j-w[i]]+v[i]);
+    }
+}
+
+for (int i = 1; i <= W; i++)
+    m[i] = max(m[i], m[i-1]);
+return m[W];
+```
+
+若眾多重量小的物品，上述程序大幅度地降低運行次數
+
+---
+
+## 動態規劃 - 減少更多的計算次數 ##
+
+* 前一頁的計算次數為 `\(\sum_{i=1}^{N} \min(\sum_{j=1}^{i-1} w_j, W)\)`
+
+* 計算次數依賴輸入給定的順序 `\(w_1, w_2, \cdots, w_N\)`
+
+* 為了得到更少的計算次數，我們將其按照 `\(w_i\)` 由小到大排序
+
+* 最後，得到 `\(\sum_{i=1}^{N} \min(\sum_{j=1}^{i-1} w_j, W)\)` 最小化方案
+
+
+```c
+sort([(w, v)] by increasing order w);
+
+return knapsack([(w, v)], N, W);
+```
+
+---
+
+class: center, middle
+
+## 平行之前 ##
+
+* 已經達到計算效能的極致了嗎？
+
+* 也許還沒，至少比普遍算法快上許多
+
+---
+
+## 平行設計 - 第一波 - 設計 ##
+
+拿滾動數組的版本來瞧瞧
+
+發現資料依賴關係只有跟上一層有關，平行最裡層的迴圈
+
+```c
+int m[2][MAXW];
+memset(m, 0, sizeof(m));
+
+#pragma omp parallel
+for (int i = 1; i <= N; i++) {
+    int curr = (i&1), next = (i&1)^1;
+    #pragma omp for
+    for (int j = 0; j <= W; j++) {
+        if (w[i] > j)
+            m[next][j] = m[curr][j];
+        else
+            m[next][j] = max(m[curr][j], m[curr][j-w[i]]+v[i]);
+    }
+}
+return m[(N&1)^1][W];
+```
+
+---
+
+## 平行設計 - 第一波 - 疑惑 ##
+
+* 為什麼寫一樣的算法，有些人跑得特別快？
+
+* 加了 `-fopenmp` 後，`-O2` 能幫你優化到什麼程度？
+
+* 回到組語觀察，`m[i][j]` 的記憶體位址 `m + i*MAXW + j`
+
+```c
+int m[2][MAXW];
+memset(m, 0, sizeof(m));
+
+#pragma omp parallel
+for (int i = 1; i <= N; i++) {
+    int *curr = m[(i&1)], *next = m[(i&1)^1];
+    int wi = w[i], vi = v[i];
+    #pragma omp for
+    for (int j = 0; j <= W; j++) {
+        if (w[i] > j)
+            next[j] = curr[j];
+        else
+            next[j] = max(curr[j], curr[j-wi]+vi);
+    }
+}
+return m[(N&1)^1][W];
+```
+---
+
+## 平行設計 - 很擅長優化的朋友 A ##
+
+* 每一次都要遇到 branch 判斷，感覺挺沒效率的
+
+* 拆成 2 個迴圈，分兩部分平行
+
+```c
+int m[2][MAXW];
+memset(m, 0, sizeof(m));
+
+#pragma omp parallel
+for (int i = 1; i <= N; i++) {
+    int *curr = m[(i&1)], *next = m[(i&1)^1];
+    int wi = w[i], vi = v[i];
+    #pragma omp for nowait
+    for (int j = w[i]; j <= W; j++)
+        next[j] = max(curr[j], curr[j-wi]+vi);
+    #pragma omp for
+    for (int j = 0; j < w[i]; j++)
+        next[j] = curr[j];
+}
+return m[(N&1)^1][W];
+```
+
+> 好厲害！很擅長優化的朋友呢
+
+---
+
+## 平行設計 - 很擅長優化的朋友 B ##
+
+預設的 scheduling policy 是 static scheduling
+
+```c
+    #pragma omp for nowait
+    for (int j = w[i]; j <= W; j++)
+        ...
+    #pragma omp for
+    for (int j = 0; j < w[i]; j++)
+        ...
+```
+
+* 有點不太對勁！
+
+* 每個執行緒分配的處理區間是否在每一次迭代保持相同？
+
+* 如何增加資料局部性？
+
+* 處理起來有點麻煩呢
+
+---
+
+## 平行設計 - 很擅長優化的朋友 C ##
+
+* 「我還記得剛剛提到的減少計算次數的方法，這樣平行好不好？」
+
+```c
+int m[2][MAXW];
+memset(m, 0, sizeof(m));
+
+#pragma omp parallel
+{
+  int sum = 0;
+  for (int i = 1; i <= N; i++) {
+      int *curr = m[(i&1)], *next = m[(i&1)^1];
+      int wi = w[i], vi = v[i];
+      sum = min(W, sum+wi);
+      #pragma omp for
+      for (int j = 0; j <= sum; j++) {
+          if (w[i] > j)
+              next[j] = curr[j];
+          else
+              next[j] = max(curr[j], curr[j-wi]+vi);
+      }
+  }
+}
+for (int i = 1; i <= W; i++)
+    m[(N&1)^1][i] = max(m[(N&1)^1][i], m[(N&1)^1][i-1]);
+
+return m[(N&1)^1][W];
+```
+
+---
+
+## 平行設計 - 很擅長優化的朋友 D ##
+
+「還記得朋友 B 說過的嗎？增‧加‧局‧部‧性」
+
+```c
+const int chunk = (W + omp_get_num_threads())/omp_get_num_threads();
+#pragma omp parallel
+{
+    int sum = 0;
+    for (int i = 1; i <= N; i++) {
+        int *curr = m[(i&1)], *next = m[(i&1)^1];
+        int wi = w[i], vi = v[i];
+        sum = min(W, sum+wi);
+        #pragma omp for schedule(static, chunk)
+        for (int j = 0; j <= sum; j++) {
+            if (w[i] > j)
+                next[j] = curr[j];
+            else
+                next[j] = max(curr[j], curr[j-wi]+vi);
+        }
+    }
+}
+```
+
+> 好厲害！感覺又更好了呢
+
+---
+
+## 平行設計 - 很擅長優化的朋友 E ##
+
+* 但，現在要解決 [10164. Fast 0/1 Knapsack Problem on PC](https://judgegirl.csie.org/problem/0/10164)
+
+* 助教只讓我們使用 2 條執行緒
+
+* 還特地要求 `#pragma omp sections` 的語法？
+
+* 這一定有什麼特別的吧 ...
+
+---
+
+## 平行設計 - 很擅長優化的朋友 F ##
+
+* 在不平行的情況下，搭配減少計算次數的算法
+
+* 中間相遇法 [Meet-in-the-middle](https://judgegirl.csie.org/problem/0/10164)，誘導更多的減少計算次數
+
+* 將 `\(N\)` 個物品拆成前 `\(N/2\)` 個和後 `\(N/2\)` 個物品
+
+* 分別運行 0/1 背包問題，得到 `\(m_{\text{front}}[w]\)` 和 `\(m_{\text{back}}[w]\)`
+
+* 陣列 `\(m[w]\)`分別為重量小於等於 `\(w\)` 的最佳解
+
+* 最佳解 `\( \max\limits_{0 \le i \le w}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
+
+
+---
+
+## 平行設計 - 很擅長優化的朋友 G ##
+
+* 最佳解 `\( \max\limits_{0 \le i \le w}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
+
+* 線性 `\(O(W)\)` 解法
+
+```c
+int ret = 0;
+for (int i = W, j = 0, mx = 0; i >= 0; i--) {
+    mx = max(mx, m_back[j]), j++;
+    ret = max(ret, m_front[0][i] + mx);
+}
+return ret;
+```
+
+「知道怎麼合併，那誘導更多的減少計算又是怎麼一回事？」
+
+---
+
+## 平行設計 - 很擅長優化的朋友 H ##
+
+* 中間相遇法為了高效的複雜度保證，通常將問題一分為二
+
+* 切成一半一半，理論複雜度最低
+
+* 現在的算法，能給予的確切計算次數　
+
+`\(\sum_{i=1}^{N/2} \min(\sum_{j=1}^{i-1} w_j, W) + \sum_{i=N/2+1}^{N} \min(\sum_{j=N/2+1}^{i-1} w_j, W)\)`
+
+* 分治之後，運行排序不保證最小化上述公式？
+
+* 但至少能找個更好的對吧？
+
+* 平行算法要將兩個問題的時間最大值最小化
+
+---
+
+## 平行設計 - 很擅長優化的朋友 I ##
+
+* 貪心算法，一開始排序權重由小到大
+
+* 分配權重到目前工作量最小的那一個
+
+```c
+sort([(w, v)] by increasing order w);
+
+sub-problem A, B;
+
+int workloadA = 0, workloadB = 0;
+for (int i = 1; i <= N; i++) {
+    if (workloadA < workloadB)
+        A.push((w_i, v_i)), workloadA += w_i;
+    else
+        B.push((w_i, v_i)), workloadB += w_i;
+}
+```
+
+---
+
+## 平行設計 - 很擅長優化的朋友 J ##
+
+* 接下來，只要運行 2 次背包算法
+
+* 最後，在 `\(O(W)\)` 時間內合併
+
+```c
+#pragma omp parallel sections
+{
+    #pragma omp section
+    subKnapsack(A, W);
+    #pragma omp section
+    subKnapsack(B, W);
+}
+
+int ret = 0;
+for (int i = W, j = 0, mx = 0; i >= 0; i--) {
+    mx = max(mx, m_back[j]), j++;
+    ret = max(ret, m_front[0][i] + mx);
+}
+return ret;
+```
+
+---
+
+## 平行設計 - 很擅長優化的朋友 K ##
+
+* 拆成兩個子問題
+
+* 通訊成本只出現在輸入和輸出
+
+* 當初為了加速運算而親合在同一個處理器上
+
+* 分別運行兩個處理器上，更能充分運用快取
+
+---
+
+![「朋友 A」－《四月是你的謊言》](http://i.imgur.com/m2e9Fjw.jpg)
+
+《四月是你的謊言》
+
+    </textarea>
+	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+
+      // Setup MathJax
+      MathJax.Hub.Config({
+          tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+          }
+      });
+/*
+      MathJax.Hub.Queue(function() {
+          MathJax.Hub.getAllJax().map(function(index, elem) {
+              return(elem.SourceElement());
+          }).parent().addClass('has-jax');
+      });
+*/
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>
