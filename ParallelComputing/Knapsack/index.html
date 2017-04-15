@@ -324,14 +324,11 @@ return m[(N&1)^1][W];
 
 * 為什麼寫一樣的算法，有些人跑得特別快？
 
-* 加了 `-fopenmp` 後，`-O2` 能幫你優化到什麼程度？
-
 * 回到組語觀察，`m[i][j]` 的記憶體位址 `m + i*MAXW + j`
 
 ```c
 int m[2][MAXW];
 memset(m, 0, sizeof(m));
-
 #pragma omp parallel
 for (int i = 1; i <= N; i++) {
     int *curr = m[(i&1)], *next = m[(i&1)^1];
@@ -357,7 +354,6 @@ return m[(N&1)^1][W];
 ```c
 int m[2][MAXW];
 memset(m, 0, sizeof(m));
-
 #pragma omp parallel
 for (int i = 1; i <= N; i++) {
     int *curr = m[(i&1)], *next = m[(i&1)^1];
@@ -404,9 +400,6 @@ return m[(N&1)^1][W];
 * 「我還記得剛剛提到的減少計算次數的方法，這樣平行好不好？」
 
 ```c
-int m[2][MAXW];
-memset(m, 0, sizeof(m));
-
 #pragma omp parallel
 {
   int sum = 0;
@@ -425,7 +418,6 @@ memset(m, 0, sizeof(m));
 }
 for (int i = 1; i <= W; i++)
     m[(N&1)^1][i] = max(m[(N&1)^1][i], m[(N&1)^1][i-1]);
-
 return m[(N&1)^1][W];
 ```
 
@@ -436,7 +428,7 @@ return m[(N&1)^1][W];
 「還記得朋友 B 說過的嗎？增‧加‧局‧部‧性」
 
 ```c
-const int chunk = (W + omp_get_num_threads())/omp_get_num_threads();
+const int chunk = (W + omp_get_num_threads()-1)/omp_get_num_threads();
 #pragma omp parallel
 {
     int sum = 0;
@@ -483,14 +475,14 @@ const int chunk = (W + omp_get_num_threads())/omp_get_num_threads();
 
 * 陣列 `\(m[w]\)`分別為重量小於等於 `\(w\)` 的最佳解
 
-* 最佳解 `\( \max\limits_{0 \le i \le w}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
+* 最佳解 `\( \max\limits_{0 \le i \le W}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
 
 
 ---
 
 ## 平行設計 - 很擅長優化的朋友 G ##
 
-* 最佳解 `\( \max\limits_{0 \le i \le w}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
+* 最佳解 `\( \max\limits_{0 \le i \le W}(m_{\text{front}}[i] + \max\limits_{W-i \le j \le W}(m_{\text{back}}[j])) \)`
 
 * 線性 `\(O(W)\)` 解法
 
