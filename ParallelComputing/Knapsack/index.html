@@ -409,7 +409,7 @@ return m[(N&1)^1][W];
       sum = min(W, sum+wi);
       #pragma omp for
       for (int j = 0; j <= sum; j++) {
-          if (w[i] > j)
+          if (wi > j)
               next[j] = curr[j];
           else
               next[j] = max(curr[j], curr[j-wi]+vi);
@@ -438,7 +438,7 @@ const int chunk = (W + omp_get_num_threads()-1)/omp_get_num_threads();
         sum = min(W, sum+wi);
         #pragma omp for schedule(static, chunk)
         for (int j = 0; j <= sum; j++) {
-            if (w[i] > j)
+            if (wi > j)
                 next[j] = curr[j];
             else
                 next[j] = max(curr[j], curr[j-wi]+vi);
