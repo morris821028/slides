@@ -180,7 +180,7 @@ NTU CSIE
 
 ---
 
-## C 實作 ##
+## C - Implementation ##
 
 從區間長度 `\(i = 1, 2, 3, \cdots, N\)` 解起，得到下述程序
 
@@ -312,7 +312,7 @@ for (int i = 1; i <= N; i++) {
 
 ---
 
-## 遞迴 - OpenMP ##
+## Recursion - OpenMP ##
 
 * 至今所描述的 OpenMP 語法不易在遞迴上操作
   * `#pragma omp for`
@@ -328,8 +328,44 @@ for (int i = 1; i <= N; i++) {
 
 ---
 
-## OpenMP - task ##
+## OpenMP ##
 
+* OpenMP 3.1 - 2011, GCC 4.7
+
+* OpenMP 4.0 - 2013, GCC 4.9
+
+* OpenMP 4.5 - 2015, GCC 6.1
+
+### Check OpenMP Version ###
+
+```bash
+echo | cpp -fopenmp -dM | grep -i open
+```
+
+---
+
+## 多版本共存 ##
+
+```bash
+echo | cpp-4.9 -fopenmp -dM | grep -i open
+echo | cpp-5 -fopenmp -dM | grep -i open
+echo | cpp-6 -fopenmp -dM | grep -i open
+...
+```
+
+### Avoid `#pragma` unused ###
+
+使用新的語法，實際上不支援卻仍然可以編譯通過
+
+加入 `-Wall`，若 `#pragma` 沒有生效，就會在這裡顯示。
+
+```bash
+gcc -Wall ...
+```
+
+---
+
+## OpenMP - task ##
 
 ```c
 #pragma omp task [clause[ [, ]clause] ...]
@@ -347,6 +383,199 @@ clause:
 * `shared(list)`
 * `depend(dependence-type: list)`
 * `priority(priority-value)`
+
+---
+
+## OpenMP - task ##
+
+.left-column[
+```c
+#pragma omp parallel num_threads(4)
+{
+    #pragma omp master
+    {
+      for (int i = 0; i < 5; i++) {
+          #pragma omp task
+          help(i);
+      }
+      #pragma omp taskwait
+    }
+}
+```
+] .right-column[
+![](./images/fig-taskflow.PNG)
+]
+
+---
+
+## Recursion - First Step ##
+
+回到之前的合併動態規劃，原問題拆成四個象限分開求解
+
+所求部分為上三角
+
+.center[![](./images/fig-recursive.PNG)]
+
+---
+
+## Recursion - Second Step ##
+
+切成四個象限，合併操作分成兩種型
+
+`\(X\)` 為所求，`\(U, V\)` 為已知
+
+.left-column[
+  .center[![](./images/fig-typeB.PNG)]
+] .right-column[
+  .center[![](./images/fig-typeC.PNG)]
+]
+
+---
+
+## Implementation ##
+
+
+.left-column[
+```c
+void A_par(X ◥) {
+    #pragma omp task
+    A_par(X(1, 1))
+    #pragma omp task
+    A_par(X(2, 2))
+    #pragma omp taskwait
+    B_par(X(1, 2), X(1, 1), X(2, 2))
+}
+void B_par(X ■, U ◥, V ◥) {
+    B_par(X(2, 1), U(2, 2), V(1, 1))
+
+    #pragma omp task
+    C_par(X(1, 1), U(1, 2), X(2, 1))
+    #pragma omp task
+    C_par(X(2, 2), X(2, 1), V(1, 2))
+    #pragma omp taskwait
+
+    #pragma omp task
+    B_par(X(1, 1), U(1, 1), V(1, 1))
+    #pragma omp task
+    B_par(X(2, 2), U(2, 2), V(2, 2))
+    #pragma omp taskwait
+
+    C_par(X(1, 2), U(1, 2), X(2, 2))
+    C_par(X(1, 2), X(1, 1), V(1, 2))
+    C_par(X(1, 2), U(1, 2), V(2, 2))
+}
+```
+] .right-column[
+```c
+void C_par(X ■, U ■, V ■) {
+    #pragma omp task
+    C_par(X(1, 1), U(1, 1), V(1, 1))
+    #pragma omp task
+    C_par(X(1, 2), U(1, 1), V(1, 2))
+    #pragma omp task
+    C_par(X(2, 1), U(2, 1), V(1, 1))
+    #pragma omp task
+    C_par(X(2, 2), U(2, 1), V(1, 2))
+    #pragma omp taskwait
+
+    #pragma omp task
+    C_par(X(1, 1), U(1, 2), V(2, 1))
+    #pragma omp task
+    C_par(X(1, 2), U(1, 2), V(2, 2))
+    #pragma omp task
+    C_par(X(2, 1), U(2, 2), V(2, 1))
+    #pragma omp task
+    C_par(X(2, 2), U(2, 2), V(2, 2))
+    #pragma omp taskwait
+}
+```
+]
+
+---
+
+## Implementation - More ##
+
+處理器個數不多，降低 thread create/destroy 次數
+
+.left-column[
+```c
+void A_par(X ◥) {
+    #pragma omp task
+    A_par(X(1, 1))
+    #pragma omp task
+    A_par(X(2, 2))
+    #pragma omp taskwait
+    B_par(X(1, 2), X(1, 1), X(2, 2))
+}
+void B_par(X ■, U ◥, V ◥) {
+    B_par(X(2, 1), U(2, 2), V(1, 1))
+
+    #pragma omp task
+    C_par(X(1, 1), U(1, 2), X(2, 1)),
+      B_par(X(1, 1), U(1, 1), V(1, 1))
+    #pragma omp task
+    C_par(X(2, 2), X(2, 1), V(1, 2)), 
+      B_par(X(2, 2), U(2, 2), V(2, 2))
+    #pragma omp taskwait
+
+    C_par(X(1, 2), U(1, 2), X(2, 2))
+    C_par(X(1, 2), X(1, 1), V(1, 2))
+    C_par(X(1, 2), U(1, 2), V(2, 2))
+}
+
+```
+] .right-column[
+```c
+void C_par(X ■, U ■, V ■) {
+    #pragma omp task
+    C_par(X(1, 1), U(1, 1), V(1, 1)),
+      C_par(X(1, 1), U(1, 2), V(2, 1))
+    #pragma omp task
+    C_par(X(1, 2), U(1, 1), V(1, 2)),
+      C_par(X(1, 2), U(1, 2), V(2, 2))
+    #pragma omp task
+    C_par(X(2, 1), U(2, 1), V(1, 1)),
+      C_par(X(2, 1), U(2, 2), V(2, 1))
+    #pragma omp task
+    C_par(X(2, 2), U(2, 1), V(1, 2)),
+      C_par(X(2, 2), U(2, 2), V(2, 2))
+    #pragma omp taskwait
+}
+```
+]
+
+---
+
+## OpenMP - taskloop ##
+
+> 為什麼不直接加 `#pragma omp for`
+
+若直接在 `master` 裡面使用 `#pragma omp for`，將會得到錯誤訊息
+
+```bash
+error: ‘master’ region may not be closely nested inside of work-sharing ...
+```
+
+使用 `#pragma omp taskloop` 幫你達到目的 (>= OpenMP 4.5)
+
+```c
+#pragma omp parallel
+{
+    #pragma omp master
+    {
+        #pragma omp taskloop grainsize(1)
+        for (int i = 0; i < 5; i++) {
+            help(i);
+        }
+    }
+}
+```
+
+---
+
+## Reference ##
+
+* Jesmin Jahan Tithi, Pramod Ganapathi, Aakrati Talati, Sonal Aggarwal, Rezaul Chowdhury, "High-perofrmance Energy-efficient Recursive Dynamic Programming with Matrix-multiplication-like Flexible Kernels", 2015, IPDPS
 
 
 
