@@ -134,7 +134,9 @@
 title: Parallel Matrix Chain Multiplication
 class: center, middle
 
-## Parallel Matrix Chain Multiplication
+## Parallel 
+
+## Matrix Chain Multiplication
 
 ### 平行矩陣鏈乘積
 
@@ -173,11 +175,12 @@ NTU CSIE
 
 * 時間複雜度 `\(O(N^3)\)`
 
-> 套用在此問題，**矩陣鏈乘積最少次數**理論複雜度為 `\(O(N \log N)\)`
+> 套用在此問題  
+> **矩陣鏈乘積最少次數**理論複雜度為 `\(O(N \log N)\)`
 
 ---
 
-## 實作 ##
+## C 實作 ##
 
 從區間長度 `\(i = 1, 2, 3, \cdots, N\)` 解起，得到下述程序
 
@@ -227,6 +230,125 @@ for (int i = 1; i <= N; i++) {
     }
 }
 ```
+
+* `\(O(N^3/p + N^2)\)`, 其中 `\(p\)` 為處理器數量
+
+---
+
+## Memory Access ##
+
+* 當 `\(N\)` 超過 1024 時，易觸發 Cache miss
+
+* 左上角為所求的 `\(m[i, j]\)`，其合併操作需要存取的元素 **不連續**
+
+.center[![](./images/fig-origin.PNG)]
+
+---
+
+## Mind the Cache ##
+
+* 為了解決上述的問題，儲存答案 `\(m[i,j] = m[j, i]\)`
+
+* 合併操作皆為讀取**連續的**元素
+
+.center[![](./images/fig-improve-mem.PNG)]
+
+---
+
+## Improve Algorithm ##
+
+```c
+#pragma omp parallel
+for (int i = 1; i <= N; i++) {
+    #pragma omp for
+    for (int j = 0; j < N-i; j++) {
+        int l = j, r = j+i;
+        long long local = INF;
+        for (int k = l; k < r; k++) {
+            long long t = dp[l*N+k] + dp[r*N+(k+1)] + SZ[l] * SZ[k+1] * SZ[r+1];
+            if (t < local)
+                local = t;
+        }
+        dp[l*N+r] = dp[r*N+l] = local; // important
+    }
+}
+```
+
+* 每一格元素儲存 1 次、讀取 `\(O(N)\)` 次
+
+* 儲存發生 cache miss，降低讀取發生的 cache miss
+
+---
+
+## Is that All?  ##
+
+* 時間複雜度 `\(O(N^3/p + N^2)\)`
+
+* 大部分 cache miss 問題已解決？
+  * 編譯器優化技術，誘發數據重用性、指令平行
+
+  * loop tiling (loop blocking/strip mine and interchange)
+
+  * loop unrolling (unwinding)
+
+* 處理器再怎麼多都只有 `\(O(N^2)\)`？  
+  * 下一階段，將介紹時間複雜度 `\(O(N^3/p + N^{\log_2 3})\)`
+
+---
+
+## Recursive Decomposition ##
+
+* 在循序算法下
+  * 相同時間複雜度
+
+  * 遞迴設計有較好的 **時間局部性 (temporal locality)**
+
+  * 易於撰寫且代碼複用 (code reuse) 機會高
+
+* 在平行環境下
+  * 更高的平行度
+
+  * **易於撰寫？**
+
+---
+
+## 遞迴 - OpenMP ##
+
+* 至今所描述的 OpenMP 語法不易在遞迴上操作
+  * `#pragma omp for`
+
+  * `#pragma omp section`
+
+  * ... 等
+
+* 也許可以手動展開？不確定的條件遞迴－無法明確展開
+  * 模擬遞迴呼叫，將函數的傳遞狀態儲存到佇列中
+
+  * 設定彼此之間的相依關係
+
+---
+
+## OpenMP - task ##
+
+
+```c
+#pragma omp task [clause[ [, ]clause] ...]
+```
+
+clause:
+
+* `if([ task : ] scalar-expression)`
+* `final(scalar-expression)`
+* `untied`
+* `default(shared | none)`
+* `mergeable`
+* `private(list)`
+* `firstprivate(list)`
+* `shared(list)`
+* `depend(dependence-type: list)`
+* `priority(priority-value)`
+
+
 
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
