@@ -558,15 +558,82 @@ class: center, middle
 
 ---
 
-## OpenMP - taskloop ##
+## taskwait vs taskgroup ##
 
-> 為什麼不直接加 `#pragma omp for`
+### taskwait ###
 
-若直接在 `master` 裡面使用 `#pragma omp for`，將會得到錯誤訊息
+* 同步當前程序的所有 **子程序**
+
+* 若在 `helper(i)` 中，再次使用 task 且沒有使用 `taskwait` 
+
+* 無法確定離開 `f()` 後，`something()` 是否已經完成
+
+.left-column[
+```c
+void f() {
+    #pragma omp task
+      helper(0);
+    #pragma omp task
+      helper(1);
+    #pragma omp taskwait
+}
+```
+] .right-column[
+```c
+void hepler(int i) {
+    ...
+    #pragma omp task
+      something()
+    ...
+}
+```
+]
+
+---
+
+## taskwait vs taskgroup ##
+
+### taskgroup ###
+
+* 相對於 `taskwait`，同步當前程序的所有 **子程序** (遞迴地)
+
+* 確保離開 `taskgroup` 後，`something()` 已經完成
+
+.left-column[
+```c
+void f() {
+    #pragma omp taskgroup
+    {
+      #pragma omp task
+        helper(0);
+      #pragma omp task
+        helper(1);
+    }
+}
+```
+] .right-column[
+```c
+void hepler(int i) {
+    ...
+    #pragma omp task
+      something()
+    ...
+}
+```
+]
+
+---
+
+## taskloop ##
+
+> 為什麼不直接加 `#pragma omp for`  
+> `master` 裡面使用 `#pragma omp for`，將會得到錯誤訊息
 
 ```bash
 error: ‘master’ region may not be closely nested inside of work-sharing ...
 ```
+
+覺得一行一行寫出來不好維護？
 
 使用 `#pragma omp taskloop` 幫你達到目的 (>= OpenMP 4.5)
 
@@ -575,13 +642,62 @@ error: ‘master’ region may not be closely nested inside of work-sharing ...
 {
     #pragma omp master
     {
-        #pragma omp taskloop grainsize(1)
+        #pragma omp taskloop grainsize(1) // instead of 
         for (int i = 0; i < 5; i++) {
             help(i);
         }
     }
 }
 ```
+
+---
+
+## taskloop nowait ##
+
+* `#pragma omp for nowait` 
+
+* 對應 `#pragma omp taskloop nogroup`
+
+### Sparse Matrix Multiplication ###
+
+`\(A \times B = C\)`
+
+```c
+#pragma omp parallel num_threads(24)
+#pragma omp single
+for (int i = 0; i < ma; i++) {  /* ma = #different row of A */
+    #pragma omp taskloop firstprivate(i) grainsize(1024) nogroup
+    for (int j = 0; j < mb; j++) { /* mb = #different column of B */
+        /* merge operation to compute C(p, q) */
+    }
+}
+```
+
+---
+
+class: center, middle
+
+## 實戰 GO! ##
+
+[10087. Sparse Matrix Multiplication](https://judgegirl.csie.org/problem/0/10087)
+
+![](./images/go.gif)
+
+「GO!ヽ(꒪д꒪)ノ 」－《賣房子的女人》
+
+---
+
+## 後記 ##
+
+* 以目前看來，不平行就能快上兩倍
+
+* Threshold 很重要，適當大小就退回循序算法
+
+* [10087. Sparse Matrix Multiplication](https://judgegirl.csie.org/problem/0/10087)   
+的作法有兩種，常數空間和線性空間。
+  * 常數空間在一般教科書上可以找到，效能比下述的的差
+
+  * 線性空間來自於大陸某篇論文，效能較好
 
 ---
 
