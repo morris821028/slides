@@ -396,13 +396,13 @@ __kernel void vecdot(int N, ...) {  // N = 128
 
 ---
 
-## 如何設置 local size, Then ##
+## 如何設置 local size ##
 
-* 先充分利用 warp
+* 充分利用 warp
 
-* 再充分利用 warp scheduling
+* 充分利用 warp scheduling
 
-* 再充分利用 SM
+* 充分利用 SM
 
 ### 大致上 ###
 
@@ -414,6 +414,42 @@ __kernel void vecdot(int N, ...) {  // N = 128
 cl_int clEnqueueNDRangeKernel (...,
    const size_t *local_work_size, ...)
 ```
+
+---
+
+## 其他效能細節 ##
+
+* [Memory transactions](http://docs.nvidia.com/gameworks/content/developertools/desktop/analysis/report/cudaexperiments/sourcelevel/memorytransactions.htm)
+
+* Bank conflict
+
+* Memory coalescing
+
+* Register file capacity per SM
+
+* Data transfer between CPU and GPU
+
+* [PTX ISA instruction optimization](http://docs.nvidia.com/cuda/parallel-thread-execution/#data-movement-and-conversion-instructions-ld)
+
+* ...
+
+---
+
+class: center, middle
+
+![](http://i.imgur.com/bJhmVvr.jpg)
+
+---
+
+class: center, middle
+
+![](http://i.imgur.com/s8NlOr9.jpg)
+
+---
+
+class: center, middle
+
+![](http://i.imgur.com/EaemMtn.jpg)
 
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
