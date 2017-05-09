@@ -192,6 +192,147 @@ gcc -xc -E -v -
 
 > miwa 工作站上，已經幫你解決了
 
+---
+
+## 裝置資訊 ##
+
+### PCIe ###
+
+```bash
+lspci | grep -i "Nvidia"
+```
+
+### OpenCL ###
+
+```bash
+clinfo
+```
+
+### Nvidia ###
+
+```bash
+nvidia-smi                              // show information
+sudo nvidia-smi -pm 1                   // on persistence mode
+sudo nvidia-smi -pm 0                   // off persistence mode
+watch -n 0.1 nvidia-smi                 // watch per 0.1 second
+```
+
+---
+
+## 實驗上的重要資訊 ##
+
+```bash
+$ clinfo
+  Max work items dimensions:                     3
+    Max work items[0]:                           1024
+    Max work items[1]:                           1024
+    Max work items[2]:                           64
+...
+  Address bits:                                  64
+
+...
+  Local memory size:                             49152
+
+...
+  Error correction support:                      0
+  Unified memory for Host and Device:            0
+
+...
+  Queue properties:
+    Out-of-Order:                                Yes
+```
+
+> 如果本身就沒支援 ... 就 ...
+
+---
+
+## 運行錯誤 ##
+
+### 完全沒有錯誤資訊？ ###
+
+* 請換個裝置再試試
+
+* 請想好算法再試一次
+
+### 有 Error Code ###
+
+* 請到 `CL/cl.h` 下找相關資訊
+
+* 如果要搜尋 Error Code = -1
+```bash
+cat /usr/include/CL/cl.h | grep "\-1"
+```
+
+---
+
+class: center, middle
+
+## 進入正題 ##
+
+---
+
+## 易犯錯的部分 ##
+
+### 讀取 kernel.cl 檔案 ###
+
+沒有察覺到檔案讀取不完整
+
+```c
+static char clSrc[32767];
+FILE *codefin = fopen(clSrcFile, "r");
+assert(codefin != NULL);
+size_t clSrcLen = fread(clSrc, 1, 32767, codefin);
+assert(feof(codefin) != 0); // check
+```
+
+---
+
+## 運行效率問題 - Context ##
+
+如果只使用一個 GPU 裝置，[`clCreateContext`](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateContext.html) 時只使用一個 GPU 即可，每多一個慢幾百毫秒！
+
+
+```c
+cl_context clCreateContext(cl_context_properties *properties,
+    cl_uint num_devices,
+    const cl_device_id *devices,
+    void *pfn_notify (const char *errinfo, const void *private_info, size_t cb, void *user_data),
+    void *user_data,
+    cl_int *errcode_ret)
+```
+
+```c
+clStat = clGetPlatformIDs(1, &clPlatID, &clPlatN);
+CheckFailAndExit(clStat);
+clStat = clGetDeviceIDs(clPlatID, CL_DEVICE_TYPE_GPU, MAXGPU, clGPUID, &clGPUN);
+CheckFailAndExit(clStat);
+*clCtx = clCreateContext(NULL, 1, clGPUID, NULL, NULL, &clStat);  // oneeeeeee!
+CheckFailAndExit(clStat);
+```
+
+---
+
+## 運行效率問題 - Buffer ##
+
+我們有多筆測資，每次共用同一個足夠大的 buffer，運行一次 [clCreateBuffer](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateBuffer.html) 即可。
+
+```c
+cl_mem clCreateBuffer(cl_context context,
+    cl_mem_flags flags,
+    size_t size,
+    void *host_ptr,
+    cl_int *errcode_ret)
+```
+
+搭配 [clReleaseMemObject](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clReleaseMemObject.html) 使用。若驅動程式沒寫好，即使砍了主程式，GPU Memory 仍然會有問題，之前舊版曾遇過到 Memory Leak .. 等諸多問題。
+
+```c
+cl_int clReleaseMemObject(cl_mem memobj);
+```
+
+---
+
+## 運行邏輯問題 - Buffer ##
 
 
     </textarea>
