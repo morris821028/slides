@@ -289,7 +289,7 @@ assert(feof(codefin) != 0); // check
 
 ## 運行效率問題 - Context ##
 
-如果只使用一個 GPU 裝置，[`clCreateContext`](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateContext.html) 時只使用一個 GPU 即可，每多一個慢幾百毫秒！
+如果只使用一個 GPU 裝置，[`clCreateContext`](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateContext.html) 時只使用一個 GPU 即可，每多一個慢幾百毫秒！且還多用數個 thread 控制！
 
 
 ```c
@@ -332,7 +332,53 @@ cl_int clReleaseMemObject(cl_mem memobj);
 
 ---
 
-## 運行邏輯問題 - Buffer ##
+## 運行行為問題 - Buffer ##
+
+如果裝置沒有支援 `Unified memory for Host and Device`
+
+```bash
+$ clinfo
+...
+  Unified memory for Host and Device:            0
+...
+```
+
+`CL_MEM_WRITE_ONLY|CL_MEM_USE_HOST_PTR` 並不會自動寫回 Host
+
+```c
+cl_mem bufferC = 
+  clCreateBuffer(context, 
+     CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, ...);
+```
+
+請自己下 `clEnqueueReadBuffer` 讀回來
+
+```c
+clEnqueueReadBuffer(...)
+```
+
+---
+
+## 如何設定常數變數 - Kernel ##
+
+### main.c ###
+
+```c
+int N = 128;
+clStat = clSetKernelArg(*clKrn, 0, sizeof(cl_uint), (void *) &N);
+N = N/2; // N = 64
+  ...
+```
+
+### kernel.cl ###
+
+```c
+__kernel void vecdot(int N, ...) {  // N = 128
+  ...
+}
+```
+
+---
 
 
     </textarea>
