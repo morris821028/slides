@@ -451,6 +451,37 @@ class: center, middle
 
 ![](http://i.imgur.com/EaemMtn.jpg)
 
+---
+
+## 如果你寫過 CUDA ##
+
+| CUDA    | OpenCL    |
+|:---------|:-----------|
+| Thread  | Work item |
+| Block   | Work group|
+| Grid    | NDRange (index space) |
+
+---
+
+## 如果你寫過 CUDA ##
+
+| CUDA    | OpenCL    |
+|:---------|:-----------|
+| `threadIdx.x`  | `get_local_id(0)` |
+| `blockIdx.x*blockDim.x + threadIdx.x`   | `get_global_id(0)`|
+| `gridDim.x` | `get_num_groups(0)` |
+| `blockIdx.x` | `get_group_id(0)` |
+| `blockDim.x` | `get_local_size(0)` |
+| `gridDim.x*blockDIm.x` | `get_global_size(0)` |
+
+---
+
+class: center, middle
+
+![](http://i.imgur.com/aEvsQLm.jpg)
+
+
+
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
