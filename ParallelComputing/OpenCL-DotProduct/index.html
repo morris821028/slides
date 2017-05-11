@@ -194,6 +194,22 @@ gcc -xc -E -v -
 
 ---
 
+## 如果你使用 vim ##
+
+kernel code 的語法高亮可能會對你有點痛苦
+
+下載 [opencl.vim](http://www.vim.org/scripts/script.php?script_id=3157) 後，移動到 `/usr/share/vim/vimXX/syntax/`
+
+### .vimrc ###
+
+有時候設定 `syntex=c` 也足以應付
+
+```vim
+au BufReadPost *.cl set syntax=opencl
+```
+
+---
+
 ## 裝置資訊 ##
 
 ### PCIe ###
@@ -275,7 +291,9 @@ class: center, middle
 
 ### 讀取 kernel.cl 檔案 ###
 
-沒有察覺到檔案讀取不完整
+* 沒有察覺到檔案讀取不完整
+
+* **別打錯檔案名字**，批改娘上會替你重新命名檔案名稱
 
 ```c
 static char clSrc[32767];
@@ -284,6 +302,8 @@ assert(codefin != NULL);
 size_t clSrcLen = fread(clSrc, 1, 32767, codefin);
 assert(feof(codefin) != 0); // check
 ```
+
+
 
 ---
 
@@ -314,7 +334,7 @@ CheckFailAndExit(clStat);
 
 ## 運行效率問題 - Buffer ##
 
-我們有多筆測資，每次共用同一個足夠大的 buffer，運行一次 [clCreateBuffer](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateBuffer.html) 即可。
+我們有多筆測資，每次共用同一個足夠大的 buffer，運行 **一次** [clCreateBuffer](https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clCreateBuffer.html) 即可。
 
 ```c
 cl_mem clCreateBuffer(cl_context context,
@@ -334,11 +354,21 @@ cl_int clReleaseMemObject(cl_mem memobj);
 
 ## 運行效率問題 - Buffer ##
 
-題目要求的 `\(N < 16777216\)`
+題目要求的 `\(N \le 16777216\)`
 
 ```c
-test
+// -- create all buffers
+cl_mem_flags clOutBuffFlag = CL_MEM_READ_WRITE;
+*clMemOut = clCreateBuffer(*clCtx, clOutBuffFlag, sizeof(uint32_t)*MAXN,
+        NULL, &clStat);
+CheckFailAndExit(clStat);
 ```
+
+* `clCreateBuffer` 很耗時間
+
+* `clEnqueueReadBuffer` 很耗時間
+
+* 傳輸和使用量越少越好
 
 ---
 
@@ -424,6 +454,21 @@ __kernel void vecdot(int N, ...) {  // N = 128
 cl_int clEnqueueNDRangeKernel (...,
    const size_t *local_work_size, ...)
 ```
+
+---
+
+
+## 內積計算 ##
+
+* 由於 `\(N \le 16777216 = 2^{24}\)` 且傳輸量不可以太多
+
+* 我們希望一個 thread 負責一個 chunk 的內積總和
+
+* 隨著 chunk 增加所需要的 thread 就越少
+
+* 例如 `\(\text{chunk} = 256 = 2^8\)` 時，需要 `\(2^{16}\)` 條 thread
+
+* 一個 group 為充分使用 warp，安排 256 work items
 
 ---
 
