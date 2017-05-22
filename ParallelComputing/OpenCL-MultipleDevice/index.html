@@ -301,7 +301,83 @@ for (int i = 0; i < Q; i++) {
 }
 ```
 
+---
 
+class: center, middle
+
+## 助教，為什麼程序沒有快？ ##
+
+### 如何看待**你**的觀察 ###
+
+---
+
+## 如何偷窺 ##
+
+```bash
+$ watch -n 0.1 nvidia-smi
+Every 0.1s: nvidia-smi                                  Mon May 22 22:59:42 2017
+Mon May 22 22:59:27 2017
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 375.39                 Driver Version: 375.39                    |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  GeForce GTX 980 Ti  On   | 0000:03:00.0     Off |                  N/A |
+| 22%   36C    P2   197W / 250W |    103MiB /  6078MiB |     99%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  GeForce GTX 1080    On   | 0000:82:00.0     Off |                  N/A |
+| 27%   40C    P2   184W / 180W |    115MiB /  8114MiB |     99%      Default |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla K20c          On   | 0000:83:00.0     Off |                    0 |
+| 30%   34C    P0   123W / 225W |     66MiB /  4742MiB |    100%      Default |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID  Type  Process name                               Usage      |
+|=============================================================================|
+|    0     19246    C   ./main3                                        101MiB |
+|    1     19246    C   ./main3                                        113MiB |
+|    2     19246    C   ./main3                                         64MiB |
++-----------------------------------------------------------------------------+
+```
+
+---
+
+### 如何仔細偷窺 NVIDIA 在 OpenCL 的行為 ###
+
+* 獻給使用舊版 CUDA 的使用者
+
+* 請下載 [假 nvprof - Morris 改](https://gist.github.com/morris821028/6bb5709ac454c999e879b67cd7bb201e)
+
+```bash
+$ COMPUTE_PROFILE=1 COMPUTE_PROFILE_CONFIG=${CONFIG_FILE} <execute_command>
+```
+
+* 早期提供環境變數，運行後便產生 .log 檔案於目錄下
+
+* 若您使用 CUDA 8.0 的最新版本，  
+將沒辦法借助硬體得到 OpenCL 運行情況 (功能已拔除)
+
+* 用 NVVP 也無法運行 OpenCL 的執行檔，僅限 CUDA
+
+---
+
+## Overhead ##
+
+* Speedup/Efficiency 計算時，請說明有哪些因素，  
+哪一種才是**合適**的？
+
+* `clCreateContext();`  
+在一個 GPU 和多個 GPU 上建立 Context 的消耗時間不同。
+
+* 資料傳輸的帶寬 [PCI Express](https://en.wikipedia.org/wiki/PCI_Express)
+  * 是否會是瓶頸？
+
+  * 雙通道技術 (Full Duplex)？
+
+* ...
 
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
