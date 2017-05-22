@@ -329,9 +329,6 @@ Mon May 22 22:59:27 2017
 |   1  GeForce GTX 1080    On   | 0000:82:00.0     Off |                  N/A |
 | 27%   40C    P2   184W / 180W |    115MiB /  8114MiB |     99%      Default |
 +-------------------------------+----------------------+----------------------+
-|   2  Tesla K20c          On   | 0000:83:00.0     Off |                    0 |
-| 30%   34C    P0   123W / 225W |     66MiB /  4742MiB |    100%      Default |
-+-------------------------------+----------------------+----------------------+
 
 +-----------------------------------------------------------------------------+
 | Processes:                                                       GPU Memory |
@@ -378,6 +375,69 @@ $ COMPUTE_PROFILE=1 COMPUTE_PROFILE_CONFIG=${CONFIG_FILE} <execute_command>
   * 雙通道技術 (Full Duplex)？
 
 * ...
+
+---
+
+class: center, middle
+
+## 助教，程序 Debug 行為好怪 ##
+
+### ... ###
+
+---
+
+## 在 kernel 運行 `printf` ##
+
+* 在新的版本都支援在 kernel function 中使用 `printf`
+
+* 印出資訊過多時，一部分輸出訊息可能會看不到
+
+* 還是錯誤！
+
+```c
+__kernel void vecdot(...) {
+  // sometimes it work, sometimes it not work
+  printf("local id: %d, global id: %d\n", get_local_id(0), get_global_id(0));
+}
+```
+
+Why? 請注意型態
+
+
+```c
+__kernel void vecdot(...) {
+  // sometimes it work, sometimes it not work
+  printf("local id: %d, global id: %d\n", (int) get_local_id(0), (int) get_global_id(0));
+}
+```
+
+---
+
+class: center, middle
+
+## 助教，為什麼程序會快？ ##
+
+### ... ###
+
+---
+
+## 可怕的參數調校 ##
+
+### Fine Grain or Coarse Grain ###
+
+* 同時運作的數量有多少？剩下的 **那一輪** 的 **執行比例** 是多少？
+
+* Coarse Grain 造成大測資達到最快，小測資效能不合乎推論
+
+* Fine Grain 造成大小測資按理論復雜度成長，卻不是最快
+
+```bash
+$ clinfo
+  Device Type:                                   CL_DEVICE_TYPE_GPU
+  Device ID:                                     4318
+  Max compute units:                             20                 // important!
+```
+
 
     </textarea>
 	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
