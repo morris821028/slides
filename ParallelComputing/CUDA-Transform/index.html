@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CUDA</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif', 'Microsoft JhengHei';
+      }
+      h1, h2, h3 {
+        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz', 'Microsoft JhengHei';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content {background: #272822; color: white; }
+      .remark-slide-content h1 { font-size: 3.5em; }
+      .remark-slide-content h2 { font-size: 2.5em; }
+      .remark-slide-content h3 { font-size: 2em; }
+      .remark-slide-content p { font-size: 1.3em; }
+      .remark-slide-content blockquote { border-left: 5px solid rgba(152,232,99,0.8); margin: 0.65em 0 0.65em 4%; padding-left: 1%; padding-right: 1%; }
+      .remark-slide-content img { max-width: 90%; max-height: 400px; }
+      .remark-slide-content table { border: 1px solid #696969; width: 100%; margin: 1px;}
+      .remark-slide-content table thead { font-family: "Times New Roman"; }
+      .remark-slide-content table th, .remark-slide-content table td, .remark-slide-content table tr  { padding: 1px 2px; border: 1px solid #696969; }
+      .remark-slide-content table tbody { font-family: "Ubuntu Mono"; }
+      .remark-slide-content .big { font-size: 2em; }
+      .remark-slide-content .small-image { max-width: 50%; }
+      .remark-slide-content strong {color: red;}
+      .white-background {background: white;}
+      .white-background {color: black;}
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.5em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+/*        background: #e7e8e2;*/
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+		font-size: 2em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 2em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        width: 48%;
+        height: 92%;
+		float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 48%;
+		float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+title: CUDA
+class: center, middle
+
+## CUDA ##
+
+## Something ##
+
+### 一些瑣事 ###
+
+R04922067 楊翔雲, Morris
+
+NTU CSIE
+
+---
+
+## 如何編譯 CUDA? ##
+
+CUDA 編譯程序分了數個步驟
+
+* 若要搭配 OpenMP，透過 `-Xcompiler "-fopenmp"`
+
+* 若要設定 [PTX ISA](http://docs.nvidia.com/cuda/parallel-thread-execution/#axzz4iktzhbwR)，透過 `-arch` 參數
+
+* 指定特定版本，將 PTX 特別優化包成二進制的版本，否則透過 PTX 在 real time 編譯優化
+
+> Parallel Thread eXecution virtual machine: PTX
+
+```bash
+$ nvcc -Xcompiler "-fopenmp" \
+       -arch sm_30 \
+       -code sm_30 \
+       -std=c++14 \
+       main.cu \
+       -o main
+```
+
+---
+
+## 如何更方便地觀察運行結果 ##
+
+* 使用 NVIDIA Visual Profiler
+
+* 運行一次執行檔，便可觀察每一步運行的時間和呼叫細節
+
+
+```bash
+$ nvvp
+```
+
+### 如何運行遠端 GUI 程序 ###
+
+```bash
+$ ssh -X <username>@<remote-server>
+```
+
+* Windows OS: MobaXterm / Xming / ...
+
+* Mac OS: iTerm / ...
+
+---
+
+class: center, middle
+
+## Thrust Library ##
+
+Develop high-performance applications rapidly with Thrust! @[Github](https://github.com/thrust/thrust)
+
+### 高尚的競爭是一切卓越才能的源泉 ###
+
+---
+
+## What's Thrust? ##
+
+* 類似 C++ 的標準函式庫 STL
+
+* 面向高效能平行算法
+
+* GPUs / multicore CPUs 可使用
+
+* 與現有的技術結合
+  * CUDA - NVIDIA
+
+  * TBB - Intel Threading Building Blocks
+
+  * OpenMP
+
+> 好像有個傢伙缺席
+
+---
+
+## 如何切換平行環境/一鍵換裝 ##
+
+不用改動任何一行程序，編譯時改動參數
+
+### OpenMP ###
+
+```bash
+$ nvcc \
+        -Xcompiler -fopenmp \
+        -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP \
+        ...
+```
+
+### CUDA ###
+
+```bash
+$ nvcc \
+        -Xcompiler -fopenmp \
+        -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA \
+        ...
+```
+
+---
+
+## 工作站 ##
+
+* Thrust Library 是內建函數，有需要請自行查閱
+
+```bash
+/usr/local/cuda-8.0/include/thrust/
+├── detail
+│   ├── allocator
+│   ├── complex
+│   ├── config
+│   ├── dispatch
+│   ├── functional
+│   ├── mpl
+│   ├── range
+│   ├── type_traits
+│   └── util
+├── iterator
+│   └── detail
+├── random
+│   └── detail
+└── system
+    ├── cpp
+    ├── cuda
+    ├── detail
+    ├── omp
+    └── tbb
+```
+
+---
+
+class: center, middle
+
+## Workshop ##
+
+### [20016. Labeling String](https://judgegirl.csie.org/problem/0/20016) ###
+
+### 平行算法設計 ###
+
+#### 專注平行算法三十年 ####
+
+---
+
+## 題目描述 ##
+
+施工中
+
+---
+
+class: center, middle
+
+## 獻給未來助教 ##
+
+---
+
+## 沙盒內抓取裝置 ##
+
+在沙盒內完全抓不到裝置資訊，原因在於沒有掛載
+
+```bash
+$ ls /dev/nvidia*
+```
+
+將列出來的數個路徑，放入沙盒掛載設定檔中。
+
+下面只是部分情況，未來可能模組名稱、數目可能會變動
+
+```bash
+dev/nvidia0
+dev/nvidia1
+dev/nvidia2
+dev/nvidiactl
+dev/nvidia-uvm
+...
+```
+
+---
+
+## 沙盒運作 ##
+
+能抓取裝置資訊，卻無法運行 GPU kernel 程序，原因在於動態連結函式庫，如掛載 CUDA 8.0 環境時，通常缺少 
+
+* `libnvidia-fatbinaryloader.so.375.39`
+
+* `libnvidia-ptxjitcompiler.so.375.39`
+
+* `libnvidia-compiler.so.375.39`
+
+以上三個檔案，主要支援動態的編譯的相關庫
+
+* 隨著每次更新，它們的所在位置很容易變動
+
+* 找出來，並且把它 `ln -s` 到執行檔會載入的路徑下，如 `/lib/x86_64-linux-gnu/`
+
+
+---
+
+## 更新事項 ##
+
+* 編譯所需的 `nvcc` 在 CUDA 安裝時的路徑下
+
+* 在多版本并存的時候特別小心，如 `which nvcc` 是否來自於同一版本，否則
+  * 運行時，發生動態連結函式庫無法匹配 ... 等
+
+  * `nvvp`、`nvidia-smi` ... 等相關工具無法 **正常** 運行，  
+  意即部分功能仍可能正常運作
+
+---
+
+## 工作站設定 ##
+
+為讓其他使用者登入可以直接使用 `nvcc` 編譯器，以 bash 為例
+
+```bash
+sudo vim /etc/bash.bashrc
+```
+
+加入以下幾點 (請注意版本號)
+
+```bash
+# CUDA
+
+export PATH=$PATH:/usr/local/cuda-8.0/bin
+export LD_LIBRARY_PATH=/usr/lib/nvidia-375/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64/:$LD_LIBRARY_PATH
+```
+
+
+
+
+
+    </textarea>
+	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+</script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+
+      // Setup MathJax
+      MathJax.Hub.Config({
+          tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+          }
+      });
+/*
+      MathJax.Hub.Queue(function() {
+          MathJax.Hub.getAllJax().map(function(index, elem) {
+              return(elem.SourceElement());
+          }).parent().addClass('has-jax');
+      });
+*/
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>
