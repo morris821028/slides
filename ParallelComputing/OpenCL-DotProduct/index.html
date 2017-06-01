@@ -420,6 +420,33 @@ __kernel void vecdot(int N, ...) {  // N = 128
 
 ---
 
+## 如何動態設定 Local Memory ##
+
+固定大小的寫法如下：
+
+```c
+__kernel void vecdot(...) {
+  __local unsigned int localArr[128];
+  ...
+}
+```
+
+如果不想固定大小，可以從 host 透過 `clSetKernelArg` 設定。
+
+```c
+clStat = clSetKernelArg(*clKrn, 0, sizeof(unsigned int)*128, NULL);
+                                   ^以 bytes 宣告整個陣列大小
+                                                             ^用 NULL 表示 local memory 的參數
+```
+
+```c
+__kernel void vecdot( __local unsigned int localArr[]) {
+  ...
+}
+```
+
+---
+
 ## 如何設置 local size ##
 
 * 請參考 [CUDA Warps and Occupancy](http://on-demand.gputechconf.com/gtc-express/2011/presentations/cuda_webinars_WarpsAndOccupancy.pdf)
