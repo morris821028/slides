@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hadoop</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif', 'Microsoft JhengHei';
+      }
+      h1, h2, h3 {
+        font-family: 'Droid Serif', Helvetica, 'Yanone Kaffeesatz', 'Microsoft JhengHei';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content {background: #272822; color: white; }
+      .remark-slide-content h1 { font-size: 3.5em; }
+      .remark-slide-content h2 { font-size: 2.5em; }
+      .remark-slide-content h3 { font-size: 2em; }
+      .remark-slide-content p { font-size: 1.3em; }
+      .remark-slide-content blockquote { border-left: 5px solid rgba(152,232,99,0.8); margin: 0.65em 0 0.65em 4%; padding-left: 1%; padding-right: 1%; }
+      .remark-slide-content img { max-width: 90%; max-height: 400px; }
+      .remark-slide-content table { border: 1px solid #696969; width: 100%; margin: 1px;}
+      .remark-slide-content table thead { font-family: "Times New Roman"; }
+      .remark-slide-content table th, .remark-slide-content table td, .remark-slide-content table tr  { padding: 1px 2px; border: 1px solid #696969; }
+      .remark-slide-content table tbody { font-family: "Ubuntu Mono"; }
+      .remark-slide-content .big { font-size: 2em; }
+      .remark-slide-content .small-image { max-width: 50%; }
+      .remark-slide-content strong {color: red;}
+      .white-background {background: white;}
+      .white-background {color: black;}
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.5em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+/*        background: #e7e8e2;*/
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+		font-size: 2em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 2em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        width: 48%;
+        height: 92%;
+		float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 48%;
+		float: right;
+      }
+      code {
+        max-height: 470px;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+title: Hadoop
+class: center, middle
+
+## Hadoop ##
+
+## MapReduce ##
+
+### 運行流程說明 ###
+
+R04922067 楊翔雲, Morris
+
+NTU CSIE
+
+---
+
+## 工作站環境 ##
+
+* Hadoop 2.7.2 (stable)
+
+* OpenJDK 1.7.0_95, 64-bit Server VM
+
+* Debian OS
+
+```bash
+$ hadoop version
+```
+
+```bash
+$ java -version
+```
+
+> Hadooop 2.7.2 之後還有幾個版本，如  
+> 2.8.0 (2017/03/22), 3.0.0-alpha3 (2017/05/26)
+
+---
+
+## 如何編譯 Java 程序 ##
+
+### 專案配置 ###
+
+```bash
+hadoop@Shinnosuke ~/p/wordcnt> tree
+.
+├── bin
+│   ├── WordCount.class
+│   ├── WordCount$Map.class
+│   └── WordCount$Reduce.class
+├── Makefile
+├── src
+│   └── WordCount.java -------------------- <SOURCE>
+└── WordCount.jar ------------------------- <TARGET>
+```
+
+---
+
+## 如何編譯 Java 程序 ##
+
+### 手動編譯指令 ###
+
+可以透過一般的 `$ javac` 編譯程序，但需額外設定所需的 jar 檔
+
+如：
+
+```bash
+CLASSPATH="/usr/local/hadoop-2.7/share/hadoop/common/hadoop-common-2.7.2.jar: \
+          /usr/local/hadoop-2.7/share/hadoop/common/lib/commons-cli-1.2.jar: \
+          /usr/local/hadoop-2.7/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.7.2.jar \
+..."
+```
+
+編好之後包成 jar 檔 ... 覺得麻煩的話，請使用下一個方案
+
+---
+
+## 如何編譯 Java 程序 ##
+
+### Hadoop 編譯指令 ###
+
+透過 `$ hadoop com.sun.tools.javac.Main`
+
+```bash
+$ hadoop com.sun.tools.javac.Main -d ./bin ./src/WordCount.java
+$ jar -cvf WordCount.jar -C ./bin .
+```
+
+---
+
+## 如何提交 Hadoop Job ##
+
+```bash
+Usage: hadoop jar <jar> [mainClass] args...
+
+$ hadoop jar WordCount.jar WordCount $(INPUT) $(OUTPUT)
+```
+
+### Hadoop Streaming ###
+
+題外話，你也可以透過 jar 運行 streaming，使用現成執行檔
+
+```bash
+$HADOOP_HOME/bin/hadoop  jar $HADOOP_HOME/hadoop-streaming.jar \
+    -input myInputDirs \
+    -output myOutputDir \
+    -mapper /bin/cat \
+    -reducer /bin/wc
+```
+
+---
+
+## 如何使用 HDFS ##
+
+```bash
+$ hdfs dfs
+Usage: hdfs dfs [generic options]
+        [-appendToFile <localsrc> ... <dst>]
+        [-cat [-ignoreCrc] <src> ...]
+        [-checksum <src> ...]
+        [-chgrp [-R] GROUP PATH...]
+        [-chmod [-R] <MODE[,MODE]... | OCTALMODE> PATH...]
+        [-chown [-R] [OWNER][:[GROUP]] PATH...]
+        [-copyFromLocal [-f] [-p] [-l] <localsrc> ... <dst>]
+        [-copyToLocal [-p] [-ignoreCrc] [-crc] <src> ... <localdst>]
+        [-count [-q] [-h] <path> ...]
+        [-cp [-f] [-p | -p[topax]] <src> ... <dst>]
+        ...
+```
+
+---
+
+class: center, middle
+
+## 施工中 ##
+
+
+    </textarea>
+	<script src="./javascripts/remark-latest.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+</script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+
+      // Setup MathJax
+      MathJax.Hub.Config({
+          tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+          }
+      });
+/*
+      MathJax.Hub.Queue(function() {
+          MathJax.Hub.getAllJax().map(function(index, elem) {
+              return(elem.SourceElement());
+          }).parent().addClass('has-jax');
+      });
+*/
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>
