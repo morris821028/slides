@@ -154,7 +154,7 @@ CUDA 編譯程序分了數個步驟
 
 * 若要設定 [PTX ISA](http://docs.nvidia.com/cuda/parallel-thread-execution/#axzz4iktzhbwR)，透過 `-arch` 參數
 
-* 指定特定版本，將 PTX 特別優化包成二進制的版本，否則透過 PTX 在 real time 編譯優化
+* 指定特定版本 (`-code`)，將 PTX 特別優化包成二進制的版本，否則透過 PTX 在 real time 編譯優化
 
 > Parallel Thread eXecution virtual machine: PTX
 
@@ -289,7 +289,150 @@ class: center, middle
 
 ## 題目描述 ##
 
-施工中
+* 給定長度為 `\(N\)` 的字串 `\(S\)`，`\(S\)` 只由英文字母和空白自元組成
+
+* 對於每個位置計算，往前有多少連續英文字母
+
+* 約束連續英文字母長度不超過 `\(K \le 500\)`
+
+* 例如：
+
+```c
+S = [  a  vy  lu  rah   yhy    fibcl ]
+P = [00100120012001230001230000123450]
+```
+
+---
+
+## 循序算法 ##
+
+* 輸入型態為 `char` (1 bytes)
+
+* 輸出型態為 `int` (4 bytes)
+
+* 類似經典的 **最長平台問題**
+
+* 時間複雜度 `\(O(N)\)`
+
+```c
+void serial_trans(const char S[], int P[], int N) {
+    for (int i = 0, sum = 0; i < N; i++) {
+        if (isalnum(S[i]))
+            sum++;
+        else
+            sum = 0;
+        P[i] = sum;
+    }
+}
+```
+
+---
+
+## 粗魯的平行算法 ##
+
+* 對於每個位置，往前計算有多少個連續英文字母
+
+* 時間複雜度 `\(O(NK/p + K)\)`
+
+```c
+void par_trans(const char S[], int P[], int N) {
+    #pragma omp parallel for
+    for (int i = 0; i < N; i++) {
+        int sum = 0;
+        for (int j = i; j >= 0 && isalnum(S[j]); j--)
+            sum++;
+        P[i] = sum;
+    }
+}
+```
+
+---
+
+## 細緻些的平行算法 ##
+
+* 處理器不多的情況下，先前的算法效率不高
+
+* 複雜度不變，每個執行緒負責一段，在這一段中運行循序算法
+
+```c
+const int BLK = 8;  // set BLK as you wish
+void par_2stage_trans(const char S[], int P[], int N) {
+    int M = (N+BLK-1)/BLK;
+    #pragma omp parallel for
+    for (int i = 0; i < M; i++) {
+        int l = i*BLK, r = min((i+1)*BLK, N);
+        int sum = 0;
+        for (int j = l-1; j >= 0 && isalnum(S[j]); j--)
+            sum++;
+        for (int j = l, sum = 0; j < r; j++) {
+            if (isalnum(S[j]))
+                sum++;
+            else
+                sum = 0;
+            P[j] = sum;
+        }
+    }
+}
+```
+
+---
+
+class: center, middle
+
+## 接下來的算法 ##
+
+### 僅供參考 ###
+
+---
+
+## 優雅的平行算法 ##
+
+為排版方便，索引值以尾數表示之
+
+1. 將空白部分填入索引值，反之填入 `-1`，得 `P0`  
+```c
+i = [01234567890123456789012345678901]
+S = [  a  vy  lu  rah   yhy    fibcl ]
+P0= [01-34--78--12---678---2345-----1]
+```
+
+2. 對初步得到的位置資訊 `P0` 運行 Prefix Maximum，得 `P1`  
+```c
+P0= [01-34--78--12---678---2345-----1]
+P1= [01134447888122226788882345555551]
+```
+
+3. 對於 `P1`，將每個元素拿索引值減去，得 `P`  
+```c
+P1= [01134447888122226788882345555551]
+P = [00100120012001230001230000123450]
+```
+
+---
+
+## 分析－優雅的平行算法 ##
+
+* 第一步，`\( (i, S_i) \mapsto (i+1)[S_i \in \Sigma] -1\)`，轉換 `\(O(N/p)\)`
+
+* 第二步，前綴算法 `\( O(N \log K / p + \log K) \)`
+
+* 第三步，`\( (i, P_i) \mapsto i - P_i\)`，轉換 `\(O(N/p)\)`
+
+* 整體而言，不論連續字母多寡 `\(O(N \log N / p + \log N)\)`
+
+---
+
+## 實作－優雅的平行算法 ##
+
+* 運行 kernel call 越少越好
+  * 手動撰寫時，**第一步** 和 **第二步** 合為一項操作
+
+  * 讓并發 (concurrency) 效果更好，減少 SM 的空窗期
+
+* 減少 global memory 的存取次數
+  * 設計的算法中，時常會需要 `\(P_i\)` 和 `\(S_i\)` 作為依據
+
+  * 存取次數從 `\(2N\)` 降到 `\(N\)`，效能提升 `\(\sim 2 \)`倍
 
 ---
 
