@@ -328,6 +328,51 @@ void serial_trans(const char S[], int P[], int N) {
 
 ---
 
+## CUDA 常見錯誤 ##
+
+**執行時間過慢**
+
+```c
+void labeling(const char *cuStr, int *cuPos, int strLen) {
+    // call kernel function / Thrust library
+}
+```
+
+* 由於只能在指定函數內撰寫，請注意呼叫次數將影響
+* 根據給定的最大值限制，只宣告一次 global memory，避免重複 malloc 
+
+### C style ###
+
+```c
+#define MAXSTRLEN (1<<24)
+void labeling(const char *cuStr, int *cuPos, int strLen) {
+    static int *P0 = NULL;
+    if (P0 == NULL)
+        cudaMalloc((void **) &P0, MAXSTRLEN * sizeof(int));
+    ...
+}
+```
+
+---
+
+## CUDA 常見錯誤 ##
+
+### C++ style ###
+
+
+```cpp
+namespace MM {
+   class MemoryPool {
+    public:
+        // ...
+        MemoryPool() { ... }
+        ~MemoryPool() { ... }
+    } pool;
+}
+```
+
+---
+
 ## 粗魯的平行算法 ##
 
 * 對於每個位置，往前計算有多少個連續英文字母
