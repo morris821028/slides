@@ -151,6 +151,10 @@ NTU CSIE
 
 ## 工作站環境 ##
 
+```bash
+ssh <STUDENT_ID>@140.112.30.240
+```
+
 * Hadoop 2.7.2 (stable)
 
 * OpenJDK 1.7.0_95, 64-bit Server VM
@@ -195,7 +199,7 @@ hadoop@Shinnosuke ~/p/wordcnt> tree
 
 可以透過一般的 `$ javac` 編譯程序，但需額外設定所需的 jar 檔
 
-如：
+如 WordCount 例子中，需要以下三個基本 jar：
 
 ```bash
 CLASSPATH="/usr/local/hadoop-2.7/share/hadoop/common/hadoop-common-2.7.2.jar: \
@@ -204,7 +208,31 @@ CLASSPATH="/usr/local/hadoop-2.7/share/hadoop/common/hadoop-common-2.7.2.jar: \
 ..."
 ```
 
-編好之後包成 jar 檔 ... 覺得麻煩的話，請使用下一個方案
+> Windows 以 `;` 隔開，Linux/Mac 以 `:` 隔開。
+
+---
+
+## 如何編譯 Java 程序 ##
+
+### 手動編譯指令 ###
+
+透過 `$ hadoop classpath` 列出所有相關的路徑
+
+```bash
+$ hadoop classpath
+/usr/local/hadoop-2.7/etc/hadoop:/usr/local/hadoop-2.7/share/hadoop/common/lib/*:...
+```
+
+在 Makefile 中，妳可以參照下述的方式編譯
+
+```makefile
+CP = $(shell hadoop classpath)
+
+WordCount.jar: ./src/*.java
+    mkdir -p ./bin
+    javac -cp ${CP} -d ./bin ./src/*.java
+    jar -cvf $@ -C ./bin .
+```
 
 ---
 
@@ -259,6 +287,45 @@ Usage: hdfs dfs [generic options]
         [-count [-q] [-h] <path> ...]
         [-cp [-f] [-p | -p[topax]] <src> ... <dst>]
         ...
+```
+
+---
+
+## HDFS 路徑 ##
+
+* 假設使用者 `<USER>` 操作 `hdfs dfs` 相關指令
+
+* 預設家目錄 `/user/<USER>`
+
+* 查閱家目錄下的檔案操作
+
+```bash
+hdfs dfs -ls 
+hdfs dfs -ls /user/<USER>
+```
+
+> 如果無法存取家目錄，則是助教沒有將權限設好
+
+---
+
+## 簡易 HDFS 使用範例 ##
+
+運行前，移除先前的輸出結果 (預設行為不可覆蓋檔案)
+
+```bash
+hdfs dfs -rm -r -f wordcnt-output
+```
+
+將測試資料放入 HDFS
+
+```bash
+hdfs dfs -copyFromLocal local-wordcnt-input wordcnt-input
+```
+
+運行後，將運行結果抓回本機查閱
+
+```bash
+hdfs dfs -copyToLocal wordcnt-output local-wordcnt-output
 ```
 
 ---
@@ -458,8 +525,31 @@ iptables -t nat -A POSTROUTING --out-interface eth0 -j MASQUERADE
 iptables -A FORWARD --in-interface eth1 -j ACCEPT
 ```
 
+---
 
+## HDFS 目錄創建 ##
 
+* 有一個專門的帳號 `<hadoop>` 啟動 hadoop 環境
+
+* 其他使用者可以在 Master Server 上提交 Job
+
+* 必須手動創建每個使用者的 Workspace，並不會自動偵測 OS 上的使用者清單
+
+```py
+#!/usr/bin/python
+import os
+
+student = open('students')
+for line in student.readlines():
+    line = line[:-1]
+    line = line.split()
+    username = line[0]
+    create_cmd = "hdfs dfs -mkdir /user/%s" % username
+    chown_cmd  = "hdfs dfs -chown %s:%s /user/%s" % (username, username, username)
+
+    assert os.system(create_cmd) == 0
+    assert os.system(chown_cmd) == 0
+```
 
 
 
