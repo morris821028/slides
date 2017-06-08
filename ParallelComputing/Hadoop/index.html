@@ -119,9 +119,6 @@
         height: 92%;
 		float: left;
       }
-        .left-column h2:last-of-type, .left-column h3:last-child {
-          color: #000;
-        }
       .right-column {
         width: 48%;
 		float: right;
@@ -352,11 +349,129 @@ class: center, middle
 
 ## Workshop ##
 
+### [Word Count]() ###
+
 ---
 
 ## 題目描述 ##
 
-* 下載 [WordCount.zip]()
+* 計算文檔中的單詞
+
+* 使用預設的 `LineReader`，以行為單位分散處理有多少單詞
+
+* 輸出格式按照 `<STRING:TOKEN> <INTEGER:COUNT>`
+
+---
+
+## Word Count ##
+
+.left-column[
+### 範例輸入 ###
+
+```c
+see the word count, character count, 
+line count, and
+paragraph count. Learn how to insert 
+the word count,
+count words as you type, and more
+```
+
+] .right-column[
+### 範例輸入 ###
+
+```c
+Learn   1
+and     2
+as      1
+character       1
+count   1
+count,  4
+count.  1
+how     1
+insert  1
+line    1
+more    1
+paragraph       1
+see     1
+the     2
+to      1
+type,   1
+word    2
+words   1
+you     1
+```
+]
+
+
+---
+
+## 實驗項目 ##
+
+---
+
+## 注意事項 ##
+
+---
+
+class: center, middle
+
+## Workshop ##
+
+### Average ###
+
+---
+
+## 題目描述 ##
+
+給定數筆學生成績 (以行為單位)，請找出每個學生的平均分數
+
+* 輸入保證每一行為單一筆學生資料，其每行格式為 `<STRING:NAME> <INTEGER:SCORE>`
+
+* 輸出時，按照 `<STRING:NAME>` 字典順序輸出，
+
+### 約束 ###
+
+* `<STRING:NAME>` 只包含英文大小寫字母
+
+* `<INTEGER:SCORE>` 為 0 到 100 (含) 之間的整數
+
+* 保證每個學生的分數總和不超過 32-bit integer
+
+---
+
+## Average ##
+
+.left-column[
+### 範例輸入 ###
+
+```c
+Amy 35
+Bob 60
+Amy 70
+andy 88
+david 100
+andy 25
+Amy 70
+```
+
+] .right-column[
+### 範例輸入 ###
+
+```c
+Amy 58.33
+Bob 60
+andy 56.5
+david 100
+```
+]
+
+---
+
+## 實驗項目 ##
+
+---
+
+## 注意事項 ##
 
 ---
 
