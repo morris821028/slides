@@ -409,7 +409,7 @@ void par_2stage_trans(const char S[], int P[], int N) {
         int sum = 0;
         for (int j = l-1; j >= 0 && isalnum(S[j]); j--)
             sum++;
-        for (int j = l, sum = 0; j < r; j++) {
+        for (int j = l; j < r; j++) {
             if (isalnum(S[j]))
                 sum++;
             else
@@ -529,7 +529,9 @@ thrust::inclusive_scan_by_key(thrust::device, ...);
 
 ## 算法－特別約束 ##
 
-### block 設定 ###
+### 範例說明 ###
+
+#### block 設定 ####
 
 * 每個 block 處理 5 個元素
 
