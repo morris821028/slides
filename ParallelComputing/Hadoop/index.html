@@ -494,6 +494,39 @@ and/or the reducer. [on Hadoop website](https://hadoop.apache.org/docs/r2.7.2/ha
 
 ---
 
+## Word Count ##
+
+下載 [WordCount-Streaming.tar]()
+
+## Average ##
+
+下載 [Average-Streaming.tar]()
+
+```bash
+hadoop jar /usr/local/hadoop-2.7/share/hadoop/tools/lib/hadoop-streaming-2.7.2.jar \
+  -files mapper.py,reducer.py,combiner.py \
+  -mapper mapper.py \
+  -reducer reducer.py \
+  -combiner combiner.py \
+  -input /user/hadoop/avg-input/avg-input.large -output avg-output \
+  -numReduceTasks 2
+```
+
+---
+
+## Test Toy ##
+
+```bash
+$ cat avg.in | ./mapper.py | sort -k 1,1 | ./combiner.py | sort -k 1,1 | ./reducer.py
+Amy 58.333333
+andy 56.500000
+Bob 60.000000
+david 100.000000
+```
+
+
+---
+
 class: center, middle
 
 ## 獻給未來助教 ##
@@ -699,6 +732,13 @@ for line in student.readlines():
     assert os.system(chown_cmd) == 0
 ```
 
+---
+
+## Reference ##
+
+* [Apache Hadoop 2.7.2 Document](https://hadoop.apache.org/docs/r2.7.2/)
+
+* [Michael G. Noll, Writing an Hadoop MapReduce Program in Python](http://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/)
 
 
     </textarea>
