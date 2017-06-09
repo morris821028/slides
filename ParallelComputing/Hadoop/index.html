@@ -123,6 +123,11 @@
         width: 48%;
 		float: right;
       }
+      .column-1-3 {
+        width: 33%;
+        height: 92%;
+        float: left;
+      }
       code {
         max-height: 470px;
       }
@@ -407,6 +412,8 @@ you     1
 
 ## 實驗項目 ##
 
+下載 [WordCount.tar](http://judgegirl.csie.org/downloads/hadoop/WordCount.tar)
+
 * [1 pt] 統計目前放在 HDFS 上的資料，路徑位置為 `/user/hadoop/wordcnt-input/*`
 
 * [1 pt] 生一組自己的輸入測資，手動上傳到 HDFS 後，運行一次 Word Count 得到預期的正確結果
@@ -489,9 +496,64 @@ david 100
 
 ## 實驗項目 ##
 
+下載 [Average-TODO.tar](http://judgegirl.csie.org/downloads/hadoop/Average-TODO.tar)
+
+* [1 pt] Task I: 完成附檔所缺少的 Mapper/Reducer 函數，並成功運行 `/user/hadoop/avg-input/avg-input.large`
+
+* [1 pt] Task II: 完成附檔所缺少的 Combiner 函數，運行後回報效能改善情況
+
+請保留 **操作指令** 和 **輸入/輸出結果**
+
+在 Workshop 時，由助教檢查運行結果
+
+---
+
+## 參考算法 ##
+
+
+```c
+// Mapper
+Amy 35        -> (Amy, (35, 1))
+Bob 60        -> (Bob, (60, 1))
+Amy 70        -> (Amy, (70, 1))
+andy 88       -> (andy, (88, 1))
+----- data partitioning -----
+david 100     -> (david, (100, 1))
+andy 25       -> (andy, (25, 1))
+Amy 70        -> (Amy, (70, 1))
+```
+
+```c
+// Combiner
+(Amy, [(35, 1), (70, 1)]) -> (Amy, (105, 2))
+(Bob, (60, 1))            -> (Bob, (60, 1))
+(andy, (88, 1))           -> (andy, (88, 1))
+----- data partitioning -----
+(david, (100, 1))         -> (david, (100, 1))
+(andy, (25, 1))           -> (andy, (25, 1))
+(Amy, (70, 1))            -> (Amy, (70, 1))
+```
+
+
+```c
+// Reducer
+(Amy, [(105, 2), (70, 1)])  -> (Amy, 58.33)
+(Bob, (60, 1))              -> (Bob, 60)
+----- data partitioning -----
+(andy, [(25, 1), (88, 1)])  -> (andy, 56.5)
+(david, (100, 1))           -> (david, 100)
+```
+
+
 ---
 
 ## 注意事項 ##
+
+* 請優先以 `avg-input.small` 測試正確性
+
+* 上述程序只是參考程序，無強制使用 `<Text, IntPair>` 
+
+* 可使用自行設計的 Mapper/Reducer/Combiner 
 
 ---
 
