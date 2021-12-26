@@ -10,3 +10,7 @@ My slides in Algorithms, ...
 * [OpenCL Multiple Device](https://morris821028.github.io/slides/ParallelComputing/OpenCL-MultipleDevice/)
 * [CUDA](https://morris821028.github.io/slides/ParallelComputing/CUDA-Transform/)
 
+## Sharing
+
+* [High School Lecture - HLHS](https://morris821028.github.io/slides/ToHighSchool/hlhs/)
+
